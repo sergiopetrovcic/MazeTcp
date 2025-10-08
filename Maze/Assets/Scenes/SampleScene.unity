@@ -136,7 +136,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!154 &302926211
 TerrainCollider:
   m_ObjectHideFlags: 0
@@ -476,6 +476,57 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &536155714
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 536155716}
+  - component: {fileID: 536155715}
+  m_Layer: 0
+  m_Name: GridGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &536155715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536155714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d242d68a934e5e4da2708fb802105d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridGenerator
+  rows: 5
+  cols: 5
+  cellWidth: 2
+  cellLength: 2
+  wallHeight: 2
+  cellPrefab: {fileID: 1187869009183476227, guid: e62107afd4a95224ab6c2ab7691712d0, type: 3}
+  wallPrefab: {fileID: 2866571087625540839, guid: 0e73f9ae97e4fff49bada8be7da8f97b, type: 3}
+--- !u!4 &536155716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536155714}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,6 +576,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1117426105 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7590951292965798748, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
+  m_PrefabInstance: {fileID: 503594328874464639}
+  m_PrefabAsset: {fileID: 0}
+--- !u!54 &1117426111
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1117426105}
+  serializedVersion: 5
+  m_Mass: 30
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 80
+  m_CollisionDetection: 0
 --- !u!1 &1211281895
 GameObject:
   m_ObjectHideFlags: 0
@@ -536,12 +619,12 @@ GameObject:
   - component: {fileID: 1211281897}
   - component: {fileID: 1211281896}
   m_Layer: 0
-  m_Name: MazeGenerator
+  m_Name: MazeGenerator_ANTIGO
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1211281896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -577,6 +660,60 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1318434622
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1318434623}
+  - component: {fileID: 1318434624}
+  m_Layer: 0
+  m_Name: MazeGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1318434623
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1318434622}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1318434624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1318434622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bfb2c466f1d261458902ab966db578f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MazeGenerator
+  rows: 10
+  cols: 10
+  cellWidth: 2
+  cellLength: 2
+  wallHeight: 2
+  mode: 1
+  cellPrefab: {fileID: 1187869009183476227, guid: e62107afd4a95224ab6c2ab7691712d0, type: 3}
+  wallPrefab: {fileID: 2866571087625540839, guid: 0e73f9ae97e4fff49bada8be7da8f97b, type: 3}
+  playerStart: {x: 0, y: 0}
+  targetCell: {x: 8, y: 5}
 --- !u!1001 &503594328874464639
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -585,6 +722,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 183089937336121743, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1411011293267585291, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -653,6 +794,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -1.785
       objectReference: {fileID: 0}
+    - target: {fileID: 5728040312371578391, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6146957992099653854, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
       propertyPath: field of view
       value: 100
@@ -665,14 +810,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 8161592791022019339, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9046279406710175271, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
       propertyPath: maze
       value: 
-      objectReference: {fileID: 1211281896}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7590951292965798748, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1117426111}
   m_SourcePrefab: {fileID: 100100000, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
@@ -684,3 +836,5 @@ SceneRoots:
   - {fileID: 1211281897}
   - {fileID: 302926213}
   - {fileID: 503594328874464639}
+  - {fileID: 536155716}
+  - {fileID: 1318434623}

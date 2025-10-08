@@ -11,14 +11,14 @@ public class Player : MonoBehaviour
     private bool isRotating = false;
     void Update()
     {
-        if (maze != null)
-            maze.RevealFog(transform.position, visionRadius);
+        //if (maze != null)
+        //    maze.RevealFog(transform.position, visionRadius);
 
         HandleKeyboardInput();
     }
 
     #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-        private bool IsKeyDown_W() => Keyboard.current != null && Keyboard.current[Key.W].isPressed;
+        private bool IsKeyDown_W() => Keyboard.current != null && Keyboard.current[Key.W].wasPressedThisFrame;
         private bool IsKeyDown_A() => Keyboard.current != null && Keyboard.current[Key.A].wasPressedThisFrame;
         private bool IsKeyDown_D() => Keyboard.current != null && Keyboard.current[Key.D].wasPressedThisFrame;
 #else
