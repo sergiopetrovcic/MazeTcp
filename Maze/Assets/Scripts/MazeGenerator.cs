@@ -109,7 +109,7 @@ public class MazeGenerator : MonoBehaviour
     #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
         private bool IsKeyDown_N() => Keyboard.current != null && Keyboard.current[Key.N].wasPressedThisFrame;
         private bool IsKeyDown_G() => Keyboard.current != null && Keyboard.current[Key.G].wasPressedThisFrame;
-        private bool IsKeyDown_S() => Keyboard.current != null && Keyboard.current[Key.S].wasPressedThisFrame;
+        private bool IsKeyDown_S() => Keyboard.current != null && Keyboard.current[Key.S].wasPressedThisFrame && Keyboard.current[Key.LeftCtrl].wasPressedThisFrame;
         private bool IsKeyDown_L() => Keyboard.current != null && Keyboard.current[Key.L].wasPressedThisFrame;
         private bool IsKeyDown_R() => Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame;
         private bool IsKeyDown_O() => Keyboard.current != null && Keyboard.current[Key.O].wasPressedThisFrame;
@@ -122,7 +122,7 @@ public class MazeGenerator : MonoBehaviour
         private bool IsKeyDown_6() => Keyboard.current != null && Keyboard.current[Key.Digit6].wasPressedThisFrame;
         private bool IsKeyDown_7() => Keyboard.current != null && Keyboard.current[Key.Digit7].wasPressedThisFrame;
         private bool IsKeyDown_8() => Keyboard.current != null && Keyboard.current[Key.Digit8].wasPressedThisFrame;
-    #else
+#else
         private bool IsKeyDown_N() => Input.GetKeyDown(KeyCode.N);
         private bool IsKeyDown_G() => Input.GetKeyDown(KeyCode.G);
         private bool IsKeyDown_S() => Input.GetKeyDown(KeyCode.S);
@@ -130,7 +130,7 @@ public class MazeGenerator : MonoBehaviour
         private bool IsKeyDown_R() => Input.GetKeyDown(KeyCode.R);
         private bool IsKeyDown_O() => Input.GetKeyDown(KeyCode.O);
         private bool IsKeyDown_P() => Input.GetKeyDown(KeyCode.P);
-        private bool IsKeyDown_W() => Input.GetKeyDown(KeyCode.W);
+        private bool IsKeyDown_W() => Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.W);
         private bool IsKeyDown_1() => Input.GetKeyDown(KeyCode.Alpha1);
         private bool IsKeyDown_2() => Input.GetKeyDown(KeyCode.Alpha2);
         private bool IsKeyDown_3() => Input.GetKeyDown(KeyCode.Alpha3);
@@ -139,7 +139,7 @@ public class MazeGenerator : MonoBehaviour
         private bool IsKeyDown_6() => Input.GetKeyDown(KeyCode.Alpha6);
         private bool IsKeyDown_7() => Input.GetKeyDown(KeyCode.Alpha7);
         private bool IsKeyDown_8() => Input.GetKeyDown(KeyCode.Alpha8);
-    #endif
+#endif
     #endregion
 
     #region Maze generation (Depth-first backtracker)
