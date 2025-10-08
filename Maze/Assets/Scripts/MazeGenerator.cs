@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Unity.VisualScripting;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.InputSystem;
@@ -28,13 +29,17 @@ public class MazeGenerator : MonoBehaviour
     [Range(1f, 5f), Tooltip("Altura das paredes em metros")]
     public float wallHeight = 1f;
 
+    private List<GameObject> fogList = new List<GameObject>();
+    [SerializeField] private Material fogMaterial;
+    [SerializeField, Range(1f, 10f)] private float fogAlpha = 0.8f; // transparência
+
     private MazeCell[,] grid;
     private Transform mazeRoot;
     private string saveFolder;
 
-    [Header("Player Settings")]
-    public GameObject playerPrefab;
-    private GameObject currentPlayer;
+    //[Header("Player Settings")]
+    //public GameObject playerPrefab;
+    //private GameObject currentPlayer;
 
     private struct MazeCell
     {
@@ -86,7 +91,6 @@ public class MazeGenerator : MonoBehaviour
         // Instancia player
         if (IsKeyDown_P()) SpawnPlayer();
 
-
         // Ajustes de tamanho
         if (IsKeyDown_1()) { sizeX = Mathf.Max(5, sizeX - 1); Debug.Log($"sizeX = {sizeX}"); }
         if (IsKeyDown_2()) { sizeX = Mathf.Min(200, sizeX + 1); Debug.Log($"sizeX = {sizeX}"); }
@@ -102,39 +106,40 @@ public class MazeGenerator : MonoBehaviour
     }
 
     // Helpers: cada um mapeia a tecla para o Input System se presente, ou para o Input clássico.
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-    private bool IsKeyDown_N() => Keyboard.current != null && Keyboard.current[Key.N].wasPressedThisFrame;
-    private bool IsKeyDown_G() => Keyboard.current != null && Keyboard.current[Key.G].wasPressedThisFrame;
-    private bool IsKeyDown_S() => Keyboard.current != null && Keyboard.current[Key.S].wasPressedThisFrame;
-    private bool IsKeyDown_L() => Keyboard.current != null && Keyboard.current[Key.L].wasPressedThisFrame;
-    private bool IsKeyDown_R() => Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame;
-    private bool IsKeyDown_O() => Keyboard.current != null && Keyboard.current[Key.O].wasPressedThisFrame;
-    private bool IsKeyDown_P() => Keyboard.current != null && Keyboard.current[Key.P].wasPressedThisFrame;
-    private bool IsKeyDown_1() => Keyboard.current != null && Keyboard.current[Key.Digit1].wasPressedThisFrame;
-    private bool IsKeyDown_2() => Keyboard.current != null && Keyboard.current[Key.Digit2].wasPressedThisFrame;
-    private bool IsKeyDown_3() => Keyboard.current != null && Keyboard.current[Key.Digit3].wasPressedThisFrame;
-    private bool IsKeyDown_4() => Keyboard.current != null && Keyboard.current[Key.Digit4].wasPressedThisFrame;
-    private bool IsKeyDown_5() => Keyboard.current != null && Keyboard.current[Key.Digit5].wasPressedThisFrame;
-    private bool IsKeyDown_6() => Keyboard.current != null && Keyboard.current[Key.Digit6].wasPressedThisFrame;
-    private bool IsKeyDown_7() => Keyboard.current != null && Keyboard.current[Key.Digit7].wasPressedThisFrame;
-    private bool IsKeyDown_8() => Keyboard.current != null && Keyboard.current[Key.Digit8].wasPressedThisFrame;
-#else
-    private bool IsKeyDown_N() => Input.GetKeyDown(KeyCode.N);
-    private bool IsKeyDown_G() => Input.GetKeyDown(KeyCode.G);
-    private bool IsKeyDown_S() => Input.GetKeyDown(KeyCode.S);
-    private bool IsKeyDown_L() => Input.GetKeyDown(KeyCode.L);
-    private bool IsKeyDown_R() => Input.GetKeyDown(KeyCode.R);
-    private bool IsKeyDown_O() => Input.GetKeyDown(KeyCode.O);
-    private bool IsKeyDown_P() => Input.GetKeyDown(KeyCode.P);
-    private bool IsKeyDown_1() => Input.GetKeyDown(KeyCode.Alpha1);
-    private bool IsKeyDown_2() => Input.GetKeyDown(KeyCode.Alpha2);
-    private bool IsKeyDown_3() => Input.GetKeyDown(KeyCode.Alpha3);
-    private bool IsKeyDown_4() => Input.GetKeyDown(KeyCode.Alpha4);
-    private bool IsKeyDown_5() => Input.GetKeyDown(KeyCode.Alpha5);
-    private bool IsKeyDown_6() => Input.GetKeyDown(KeyCode.Alpha6);
-    private bool IsKeyDown_7() => Input.GetKeyDown(KeyCode.Alpha7);
-    private bool IsKeyDown_8() => Input.GetKeyDown(KeyCode.Alpha8);
-#endif
+    #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+        private bool IsKeyDown_N() => Keyboard.current != null && Keyboard.current[Key.N].wasPressedThisFrame;
+        private bool IsKeyDown_G() => Keyboard.current != null && Keyboard.current[Key.G].wasPressedThisFrame;
+        private bool IsKeyDown_S() => Keyboard.current != null && Keyboard.current[Key.S].wasPressedThisFrame;
+        private bool IsKeyDown_L() => Keyboard.current != null && Keyboard.current[Key.L].wasPressedThisFrame;
+        private bool IsKeyDown_R() => Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame;
+        private bool IsKeyDown_O() => Keyboard.current != null && Keyboard.current[Key.O].wasPressedThisFrame;
+        private bool IsKeyDown_P() => Keyboard.current != null && Keyboard.current[Key.P].wasPressedThisFrame;
+        private bool IsKeyDown_1() => Keyboard.current != null && Keyboard.current[Key.Digit1].wasPressedThisFrame;
+        private bool IsKeyDown_2() => Keyboard.current != null && Keyboard.current[Key.Digit2].wasPressedThisFrame;
+        private bool IsKeyDown_3() => Keyboard.current != null && Keyboard.current[Key.Digit3].wasPressedThisFrame;
+        private bool IsKeyDown_4() => Keyboard.current != null && Keyboard.current[Key.Digit4].wasPressedThisFrame;
+        private bool IsKeyDown_5() => Keyboard.current != null && Keyboard.current[Key.Digit5].wasPressedThisFrame;
+        private bool IsKeyDown_6() => Keyboard.current != null && Keyboard.current[Key.Digit6].wasPressedThisFrame;
+        private bool IsKeyDown_7() => Keyboard.current != null && Keyboard.current[Key.Digit7].wasPressedThisFrame;
+        private bool IsKeyDown_8() => Keyboard.current != null && Keyboard.current[Key.Digit8].wasPressedThisFrame;
+    #else
+        private bool IsKeyDown_N() => Input.GetKeyDown(KeyCode.N);
+        private bool IsKeyDown_G() => Input.GetKeyDown(KeyCode.G);
+        private bool IsKeyDown_S() => Input.GetKeyDown(KeyCode.S);
+        private bool IsKeyDown_L() => Input.GetKeyDown(KeyCode.L);
+        private bool IsKeyDown_R() => Input.GetKeyDown(KeyCode.R);
+        private bool IsKeyDown_O() => Input.GetKeyDown(KeyCode.O);
+        private bool IsKeyDown_P() => Input.GetKeyDown(KeyCode.P);
+        private bool IsKeyDown_W() => Input.GetKeyDown(KeyCode.W);
+        private bool IsKeyDown_1() => Input.GetKeyDown(KeyCode.Alpha1);
+        private bool IsKeyDown_2() => Input.GetKeyDown(KeyCode.Alpha2);
+        private bool IsKeyDown_3() => Input.GetKeyDown(KeyCode.Alpha3);
+        private bool IsKeyDown_4() => Input.GetKeyDown(KeyCode.Alpha4);
+        private bool IsKeyDown_5() => Input.GetKeyDown(KeyCode.Alpha5);
+        private bool IsKeyDown_6() => Input.GetKeyDown(KeyCode.Alpha6);
+        private bool IsKeyDown_7() => Input.GetKeyDown(KeyCode.Alpha7);
+        private bool IsKeyDown_8() => Input.GetKeyDown(KeyCode.Alpha8);
+    #endif
     #endregion
 
     #region Maze generation (Depth-first backtracker)
@@ -199,7 +204,7 @@ public class MazeGenerator : MonoBehaviour
         BuildMazeGeometry();
         CreateGuaranteedExit();
         PositionCameraAbove();
-        SpawnPlayer();
+        //SpawnPlayer();
     }
 
     private void PositionCameraAbove()
@@ -356,9 +361,53 @@ public class MazeGenerator : MonoBehaviour
                     Vector3 scale = new Vector3(wallThickness, wallHeight, cellSize - 0f);
                     CreateWall(pos, scale, Quaternion.identity);
                 }
+
+                // === Criação do fog sobre cada célula ===
+                Vector3 fogPos = new Vector3(
+                    x * cellSize - halfSizeX,
+                    wallHeight + 0.01f,
+                    z * cellSize - halfSizeZ
+                );
+                GameObject fog = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                fog.transform.SetParent(mazeRoot.transform, true);
+                fog.transform.localScale = new Vector3(cellSize, cellSize, 1);
+                fog.transform.position = fogPos;
+                fog.transform.rotation = Quaternion.Euler(90f, 0f, 0f); // deitado sobre o labirinto
+
+                if (fogMaterial != null)
+                {
+                    var matInstance = new Material(fogMaterial);
+                    Color c = matInstance.color;
+                    c.a = fogAlpha;
+                    matInstance.color = c;
+                    fog.GetComponent<Renderer>().material = matInstance;
+                }
+                else
+                {
+                    fog.GetComponent<Renderer>().material.color = new Color(0, 0, 0, fogAlpha);
+                }
+
+                fogList.Add(fog);
             }
         }
     }
+
+    public void RevealFog(Vector3 playerPosition, float visionRadius)
+    {
+        Vector2 playerXZ = new Vector2(playerPosition.x, playerPosition.z);
+
+        foreach (var fog in fogList)
+        {
+            if (fog == null) continue;
+
+            Vector2 fogXZ = new Vector2(fog.transform.position.x, fog.transform.position.z);
+            float dist = Vector2.Distance(playerXZ, fogXZ);
+
+            if (dist < visionRadius)
+                fog.SetActive(false);
+        }
+    }
+
 
     private void CreateWall(Vector3 localPos, Vector3 localScale, Quaternion rot)
     {
@@ -396,17 +445,17 @@ public class MazeGenerator : MonoBehaviour
 
     private void SpawnPlayer()
     {
-        if (playerPrefab == null)
-        {
-            Debug.LogWarning("Nenhum playerPrefab definido no MazeGenerator.");
-            return;
-        }
+        //if (playerPrefab == null)
+        //{
+        //    Debug.LogWarning("Nenhum playerPrefab definido no MazeGenerator.");
+        //    return;
+        //}
 
-        // Remove player anterior, se houver
-        if (currentPlayer != null)
-        {
-            Destroy(currentPlayer);
-        }
+        //// Remove player anterior, se houver
+        //if (currentPlayer != null)
+        //{
+        //    Destroy(currentPlayer);
+        //}
 
         // Escolhe uma célula aleatória válida dentro do labirinto
         int x = Random.Range(0, sizeX);
@@ -418,8 +467,8 @@ public class MazeGenerator : MonoBehaviour
             (z * cellSize - (sizeZ * cellSize * 0.5f)) + (cellSize * 0.5f)
         );
 
-        currentPlayer = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
-        Debug.Log($"Player instanciado em ({x}, {z})");
+        //currentPlayer = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
+        //Debug.Log($"Player instanciado em ({x}, {z})");
     }
 
 
