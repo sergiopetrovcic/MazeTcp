@@ -1,66 +1,82 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class CameraManager : MonoBehaviour
 {
     public List<Camera> cameras = new List<Camera>();
+    private int currentCamera = 0;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         DisableAllCameras();
-        cameras[0].enabled = true;
+        Enable(currentCamera);
     }
 
-    private void Update()
+    private void EnableAllCameras()
     {
-        HandleKeyboardInput();
-    }
-
-    #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-        private bool IsKeyDown_W() => Keyboard.current != null && Keyboard.current[Key.W].wasPressedThisFrame;
-        private bool IsKeyDown_A() => Keyboard.current != null && Keyboard.current[Key.A].wasPressedThisFrame;
-        private bool IsKeyDown_D() => Keyboard.current != null && Keyboard.current[Key.D].wasPressedThisFrame;
-        private bool IsKeyDown_R() => Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame;
-    #else
-        private bool IsKeyDown_W() => Input.GetKeyDown(KeyCode.W);
-        private bool IsKeyDown_A() => Input.GetKeyDown(KeyCode.A);
-        private bool IsKeyDown_D() => Input.GetKeyDown(KeyCode.D);
-    #endif
-
-    private void HandleKeyboardInput()
-    {
-        // Move para frente
-        if (IsKeyDown_W()) MoveToNextCell();//MoveForward();
-        // Girar para a esquerda
-        if (IsKeyDown_A()) RotateCCW();
-        // Girar para a direita
-        if (IsKeyDown_D()) RotateCW();
-        // Move player para início
-        if (IsKeyDown_R()) Restart();
+        foreach (Camera c in cameras)
+        {
+            c.enabled = true;
+            c.tag = "Untagged";
+            AudioListener audioListener = c.GetComponent<AudioListener>();
+            if (audioListener != null)
+                audioListener.enabled = false;
+        }
     }
 
     private void DisableAllCameras()
     {
         foreach (Camera c in cameras)
-            c.enabled = false;
-    }
-
-    public void Enable(Camera cam)
-    {
-        foreach (Camera c in cameras)
         {
-            if (cam == c)
-                c.enabled = true;
-            else
-                c.enabled = false;
+            c.enabled = false;
+            c.tag = "Untagged";
+            AudioListener audioListener = c.GetComponent<AudioListener>();
+            if (audioListener != null)
+                audioListener.enabled = false;
         }
     }
 
-    public void Enable(int c)
+    private void Enable(Camera cam)
     {
         DisableAllCameras();
+        Enable(cameras.IndexOf(cam));
+    }
+
+    private void Enable(int c)
+    {
+        DisableAllCameras();
+        currentCamera = c;
         cameras[c].enabled = true;
+        cameras[c].tag = "MainCamera";
+        cameras[c].rect = new Rect(0f, 0f, 1f, 1f);
+        AudioListener audioListener = cameras[c].GetComponent<AudioListener>();
+        if (audioListener != null)
+            audioListener.enabled = true;
+    }
+
+    public void Next()
+    {
+        currentCamera++;
+        if (currentCamera >= cameras.Count)
+            currentCamera = 0;
+        Enable(currentCamera);
+    }
+
+    public void Previous()
+    {
+        currentCamera--;
+        if (currentCamera < 0)
+            currentCamera = cameras.Count - 1;
+        Enable(currentCamera);
+    }
+
+    public void ShowAll()
+    {
+        EnableAllCameras();
+        cameras[0].rect = new Rect(0f, 0f, 0.5f, 0.5f);
+        cameras[1].rect = new Rect(0f, 0.5f, 0.5f, 1f);
+        cameras[2].rect = new Rect(0.5f, 0f, 1f, 0.5f);
+        cameras[3].rect = new Rect(0.5f, 0.5f, 1f, 1f);
     }
 }
