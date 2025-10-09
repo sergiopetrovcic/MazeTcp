@@ -1,8 +1,8 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 public class Cell : MonoBehaviour
 {
-    [Header("Dimensıes")]
+    [Header("Dimens√µes")]
     public float width = 1f;
     public float length = 1f;
     public float wallHeight = 2f;
@@ -13,16 +13,16 @@ public class Cell : MonoBehaviour
     public GameObject wallEast;
     public GameObject wallWest;
 
-    [Header("Status da CÈlula")]
+    [Header("Status da C√©lula")]
     public bool discovered = false;
     public int visitCount = 0;
 
-    [Header("Ch„o")]
+    [Header("Ch√£o")]
     public GameObject floor; // arraste o quad/plane aqui
 
     private void Start()
     {
-        // Garante que o ch„o tenha um trigger
+        // Garante que o ch√£o tenha um trigger
         if (floor != null)
         {
             Collider c = floor.GetComponent<Collider>();
@@ -33,28 +33,25 @@ public class Cell : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Entrou");
-        FindFirstObjectByType<MazeManager>()?.CellEntered(this);
+        FindFirstObjectByType<Manager>()?.CellEntered(this);
         if (other.CompareTag("Player"))
         {
             if (!discovered)
             {
                 discovered = true;
-                ChangeColor(Color.red);
-                Debug.Log($"CÈlula descoberta pela primeira vez: {name}");
+                Debug.Log($"C√©lula descoberta pela primeira vez: {name}");
             }
-
             visitCount++;
-            Debug.Log($"Player entrou na cÈlula {name}, total de visitas: {visitCount}");
+            Debug.Log($"Player entrou na c√©lula {name}, total de visitas: {visitCount}");
+            ChangeColor();
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        Debug.Log("Saiu");
         if (other.CompareTag("Player"))
         {
-            Debug.Log($"Player saiu da cÈlula {name}");
+            Debug.Log($"Player saiu da c√©lula {name}");
         }
     }
 
@@ -70,7 +67,7 @@ public class Cell : MonoBehaviour
         BoxCollider collider = GetComponent<BoxCollider>();
         if (collider != null)
         {
-            collider.size = new Vector3(width, 0.1f, length); // tamanho base relativo ‡ escala
+            collider.size = new Vector3(width, 0.1f, length); // tamanho base relativo √† escala
             collider.center = new Vector3(0f, 0f, 0f); // centralizado
         }
     }
@@ -109,23 +106,35 @@ public class Cell : MonoBehaviour
         visitCount++;
     }
 
-    public void ChangeColor(Color color)
+    // Define um limite m√°ximo para normaliza√ß√£o
+    float maxVisits = 10f; // ajuste conforme o esperado no seu jogo
+    public void ChangeColor()
     {
-        if (floor != null)
+        if (floor == null)
         {
-            MeshRenderer quadRenderer = floor.GetComponent<MeshRenderer>();
-            if (quadRenderer != null && quadRenderer.material != null)
-            {
-                quadRenderer.material.color = color;
-            }
-            else
-            {
-                Debug.LogWarning($"Floor de {name} n„o tem MeshRenderer ou material.");
-            }
+            Debug.LogWarning($"Floor n√£o atribu√≠do em {name}.");
+            return;
         }
+
+        MeshRenderer quadRenderer = floor.GetComponent<MeshRenderer>();
+        if (quadRenderer == null || quadRenderer.material == null)
+        {
+            Debug.LogWarning($"Floor de {name} n√£o tem MeshRenderer ou material.");
+            return;
+        }
+
+        float t = Mathf.Clamp01(visitCount / maxVisits);
+
+        // Interpola entre cores (exemplo: azul ‚Üí amarelo ‚Üí vermelho)
+        Color heatColor = Color.Lerp(Color.green, Color.red, t);
+
+        // Opcional: gradiente mais rico (passando pelo verde)
+        if (t < 0.5f)
+            heatColor = Color.Lerp(Color.green, Color.yellow, t * 2f);
         else
-        {
-            Debug.LogWarning($"Floor n„o atribuÌdo em {name}.");
-        }
+            heatColor = Color.Lerp(Color.yellow, Color.red, (t - 0.5f) * 2f);
+
+        quadRenderer.material.color = heatColor;
     }
+
 }

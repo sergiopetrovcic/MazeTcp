@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class MazeManager : MonoBehaviour
+public class Manager : MonoBehaviour
 {
     public int totalDiscovered = 0;
     public void CellEntered(Cell cell)

@@ -165,7 +165,7 @@ public class MazeGenerator_ANTIGO_FUNCIONANDO : MonoBehaviour
                 grid[x, z].visited = false;
             }
         }
-
+        Debug.Log("StartCoroutine(GenerateMazeRoutine()");
         StartCoroutine(GenerateMazeRoutine());
 
 
@@ -203,6 +203,7 @@ public class MazeGenerator_ANTIGO_FUNCIONANDO : MonoBehaviour
 
         BuildMazeGeometry();
         CreateGuaranteedExit();
+        Debug.Log("PositionCameraAbove()");
         PositionCameraAbove();
         //SpawnPlayer();
     }
@@ -220,7 +221,9 @@ public class MazeGenerator_ANTIGO_FUNCIONANDO : MonoBehaviour
         cam.orthographic = true;
         float maxSize = Mathf.Max(sizeX, sizeZ);
         cam.orthographicSize = maxSize * 0.55f;
-        cam.transform.position = new Vector3(0f, maxSize, 0f);
+        Debug.Log(cam.transform.position);
+        cam.transform.position = new Vector3(sizeX / 2, maxSize, sizeZ / 2);
+        Debug.Log(cam.transform.position);
         cam.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         cam.nearClipPlane = 0.1f;
         cam.farClipPlane = 500f;

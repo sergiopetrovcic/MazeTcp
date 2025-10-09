@@ -1,18 +1,47 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
     public MazeGenerator maze;
-    public float visionRadius = 5f;
+    public float visionRadius = 10f;
 
     public float rotationDuration = 0.6f; // tempo total da rotação (em segundos)
     private bool isRotating = false;
+
+    public Cell currentCell;
+    public float moveSpeed = 3f;
+    private bool isMoving = false;
+    private Vector3 targetPosition;
+
+    void Start()
+    {
+        if (maze == null)
+            maze = FindFirstObjectByType<MazeGenerator>();
+
+        // Define célula inicial
+        currentCell = maze.GetCell(maze.playerStart);
+        transform.position = currentCell.transform.position + Vector3.up * 1f; // acima do chão
+        targetPosition = transform.position;
+    }
+
     void Update()
     {
-        //if (maze != null)
-        //    maze.RevealFog(transform.position, visionRadius);
+        if (maze != null)
+            maze.RevealFog(transform.position, visionRadius);
+
+        //// Movimento suave
+        //if (isMoving)
+        //{
+        //    transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+        //    if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        //    {
+        //        isMoving = false;
+        //    }
+        //    return;
+        //}
 
         HandleKeyboardInput();
     }
@@ -21,6 +50,7 @@ public class Player : MonoBehaviour
         private bool IsKeyDown_W() => Keyboard.current != null && Keyboard.current[Key.W].wasPressedThisFrame;
         private bool IsKeyDown_A() => Keyboard.current != null && Keyboard.current[Key.A].wasPressedThisFrame;
         private bool IsKeyDown_D() => Keyboard.current != null && Keyboard.current[Key.D].wasPressedThisFrame;
+        private bool IsKeyDown_R() => Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame;
 #else
         private bool IsKeyDown_W() => Input.GetKeyDown(KeyCode.W);
         private bool IsKeyDown_A() => Input.GetKeyDown(KeyCode.A);
@@ -30,11 +60,13 @@ public class Player : MonoBehaviour
     private void HandleKeyboardInput()
     {
         // Move para frente
-        if (IsKeyDown_W()) MoveForward();
+        if (IsKeyDown_W()) MoveToNextCell();//MoveForward();
         // Girar para a esquerda
         if (IsKeyDown_A()) RotateCCW();
         // Girar para a direita
         if (IsKeyDown_D()) RotateCW();
+        // Move player para início
+        if (IsKeyDown_R()) Restart();
     }
 
     public void MoveForward()
@@ -52,14 +84,21 @@ public class Player : MonoBehaviour
 
     public void RotateCCW()
     {
-        RotateSmooth(-90f);
-        //transform.Rotate(0f, -90f, 0f, Space.World);
+        //RotateSmooth(-90f);
+        transform.Rotate(0f, -90f, 0f, Space.World);
     }
 
     public void RotateCW()
     {
-        RotateSmooth(90f);
-        //transform.Rotate(0f, 90f, 0f, Space.World);
+        //RotateSmooth(90f);
+        transform.Rotate(0f, 90f, 0f, Space.World);
+    }
+
+    private void Restart()
+    {
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.identity;
+        currentCell = maze.GetCell(maze.playerStart);
     }
 
     public void RotateSmooth(float angle)
@@ -89,5 +128,23 @@ public class Player : MonoBehaviour
 
         transform.rotation = endRotation;
         isRotating = false;
+    }
+
+    void MoveToNextCell()
+    {
+        //Cell next = maze.GetNeighborGridAligned(currentCell);
+        Cell next = maze.GetNeighbor(currentCell, transform.forward);
+        //Cell next = maze.GetNeighborSingleStep(currentCell, transform.forward);
+        if (next != null)
+        {
+            currentCell = next;
+            //targetPosition = new Vector3(next.transform.position.x, transform.position.y, next.transform.position.z);
+            //isMoving = true;
+            transform.position = new Vector3(next.transform.position.x, transform.position.y, next.transform.position.z);
+        }
+        else
+        {
+            Debug.Log("Parede bloqueando o caminho ou fora dos limites.");
+        }
     }
 }
