@@ -119,6 +119,99 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &302926210
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 302926213}
+  - component: {fileID: 302926212}
+  - component: {fileID: 302926211}
+  m_Layer: 0
+  m_Name: Terrain
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 0
+--- !u!154 &302926211
+TerrainCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302926210}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_TerrainData: {fileID: 15600000, guid: 7e57343ef0d9b0240abaa3a0e5468739, type: 2}
+  m_EnableTreeColliders: 1
+--- !u!218 &302926212
+Terrain:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302926210}
+  m_Enabled: 1
+  serializedVersion: 6
+  m_TerrainData: {fileID: 15600000, guid: 7e57343ef0d9b0240abaa3a0e5468739, type: 2}
+  m_TreeDistance: 5000
+  m_TreeBillboardDistance: 50
+  m_TreeCrossFadeLength: 5
+  m_TreeMaximumFullLODCount: 50
+  m_DetailObjectDistance: 80
+  m_DetailObjectDensity: 1
+  m_HeightmapPixelError: 5
+  m_SplatMapDistance: 1000
+  m_HeightmapMinimumLODSimplification: 0
+  m_HeightmapMaximumLOD: 0
+  m_ShadowCastingMode: 2
+  m_DrawHeightmap: 1
+  m_DrawInstanced: 0
+  m_DrawTreesAndFoliage: 1
+  m_StaticShadowCaster: 0
+  m_IgnoreQualitySettings: 0
+  m_ReflectionProbeUsage: 1
+  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  m_BakeLightProbesForTrees: 1
+  m_PreserveTreePrototypeLayers: 0
+  m_DeringLightProbesForTrees: 1
+  m_ReceiveGI: 1
+  m_ScaleInLightmap: 0.0256
+  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
+  m_GroupingID: 0
+  m_RenderingLayerMask: 1
+  m_AllowAutoConnect: 1
+  m_EnableHeightmapRayTracing: 1
+  m_EnableTreesAndDetailsRayTracing: 0
+  m_TreeMotionVectorModeOverride: 3
+--- !u!4 &302926213
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302926210}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -500, y: 0, z: -500}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -383,6 +476,57 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &536155714
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 536155716}
+  - component: {fileID: 536155715}
+  m_Layer: 0
+  m_Name: GridGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &536155715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536155714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d242d68a934e5e4da2708fb802105d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridGenerator
+  rows: 5
+  cols: 5
+  cellWidth: 2
+  cellLength: 2
+  wallHeight: 2
+  cellPrefab: {fileID: 1187869009183476227, guid: e62107afd4a95224ab6c2ab7691712d0, type: 3}
+  wallPrefab: {fileID: 2866571087625540839, guid: 0e73f9ae97e4fff49bada8be7da8f97b, type: 3}
+--- !u!4 &536155716
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536155714}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &558829784 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 2229178200896639214, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
@@ -485,6 +629,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd96704e7bc81434a8059b6480a5c8f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+--- !u!1 &1211281895
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1211281897}
+  - component: {fileID: 1211281896}
+  m_Layer: 0
+  m_Name: MazeGenerator_ANTIGO
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &1211281896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1211281895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c87696386bb14e4e9ea5b7109b15f9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MazeGenerator
+  sizeX: 10
+  sizeZ: 10
+  wallThickness: 0.1
+  cellSize: 2
+  wallMaterial: {fileID: 2100000, guid: 0db30c477dd0c2443903ef0f682408e2, type: 2}
+  wallHeight: 2
+  fogMaterial: {fileID: 2100000, guid: ac29955c2d5475a47afbd0419c8613dd, type: 2}
+  fogAlpha: 1
+--- !u!4 &1211281897
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1211281895}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1229461894
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,7 +772,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a732226867c23094eaca74ddbec765d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GUIStats
-  player: {fileID: 1117426112}
 --- !u!1 &1318434622
 GameObject:
   m_ObjectHideFlags: 0
@@ -621,8 +816,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfb2c466f1d261458902ab966db578f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MazeGenerator
-  sizeX: 4
-  sizeZ: 4
+  sizeX: 30
+  sizeZ: 30
   cellWidth: 2
   cellLength: 2
   wallHeight: 2
@@ -630,10 +825,10 @@ MonoBehaviour:
   cellPrefab: {fileID: 1187869009183476227, guid: e62107afd4a95224ab6c2ab7691712d0, type: 3}
   wallPrefab: {fileID: 2866571087625540839, guid: 0e73f9ae97e4fff49bada8be7da8f97b, type: 3}
   playerStart: {x: 0, y: 0}
-  targetCell: {x: 0, y: 0}
+  targetCell: {x: 8, y: 5}
   fogMaterial: {fileID: 2100000, guid: ac29955c2d5475a47afbd0419c8613dd, type: 2}
   fogAlpha: 1
-  allowRefog: 0
+  allowRefog: 1
 --- !u!20 &1942454185 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 6146957992099653854, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
@@ -822,6 +1017,9 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
+  - {fileID: 1211281897}
+  - {fileID: 302926213}
   - {fileID: 503594328874464639}
+  - {fileID: 536155716}
   - {fileID: 1318434623}
   - {fileID: 1229461896}

@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using Unity.VisualScripting;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public enum MazeMode
 {
@@ -36,6 +35,30 @@ public class MazeGenerator : MonoBehaviour
     [SerializeField, Range(1f, 10f)] private float fogAlpha = 0.8f; // transparência
     public bool allowRefog = false; // se verdadeiro, a neblina volta quando o player sai da área
 
+    // Statistics
+    private float startTime;
+    private int totalCells;
+    private int totalCellsVisited, totalCellsVisitedThisEpoch;
+    private int epochs = 0;
+
+    // Eventos
+    public delegate void MazeEvent(params object[] args);
+    public event MazeEvent OnStart;
+    public event MazeEvent OnFinish;
+
+    private void OnDestroy()
+    {
+        // Instancia células
+        for (int z = 0; z < sizeZ; z++)
+        {
+            for (int x = 0; x < sizeX; x++)
+            {
+                grid[z, x].OnCellVisit -= Cell_OnCellVisit;
+                grid[z, x].OnNewDiscover -= Cell_OnNewDiscover;
+            }
+        }
+    }
+
     void Start()
     {
         GenerateMaze();
@@ -55,32 +78,37 @@ public class MazeGenerator : MonoBehaviour
                 GameObject obj = Instantiate(cellPrefab, pos, Quaternion.identity, transform);
 
                 Cell cell = obj.GetComponent<Cell>();
+                cell.Coordinates = new Vector2Int(x, z);
+                cell.OnCellVisit += Cell_OnCellVisit;
+                cell.OnNewDiscover += Cell_OnNewDiscover;
                 cell.width = cellWidth;
                 cell.length = cellLength;
                 cell.wallHeight = wallHeight;
 
                 cell.UpdateFloor();
                 cell.UpdateBoxCollider();
-
                 cell.CreateWalls(wallPrefab);
 
                 grid[z, x] = cell;
             }
         }
 
-        // Remove aberturas agora **após criar todas as células**
-        RemoveWallForEdge(playerStart);
-        if (mode == MazeMode.Exit)
-            RemoveWallForEdge(targetCell);
-
         // Escolhe entrada(s)
         if (mode == MazeMode.Goal)
+        {
             playerStart = new Vector2Int(0, 0);
+            targetCell = new Vector2Int(UnityEngine.Random.Range(Mathf.CeilToInt(sizeZ /2), sizeZ - 1), UnityEngine.Random.Range(Mathf.CeilToInt(sizeX / 2), sizeX - 1));
+        }
         else if (mode == MazeMode.Exit)
         {
             playerStart = new Vector2Int(0, 0);
             targetCell = new Vector2Int(sizeZ - 1, sizeX - 1);
         }
+
+        // Remove aberturas agora **após criar todas as células**
+        RemoveWallForEdge(playerStart);
+        if (mode == MazeMode.Exit)
+            RemoveWallForEdge(targetCell);
 
         // Gera labirinto via DFS
         GenerateMazeDFS(playerStart.x, playerStart.y, new bool[sizeZ, sizeX]);
@@ -90,30 +118,25 @@ public class MazeGenerator : MonoBehaviour
             targetCell = FindFurthestCell(playerStart);
 
         PositionCameraAbove();
+
+        startTime = Time.time;
+
+        try { OnStart?.Invoke(startTime); }
+        catch (Exception e) { Debug.LogError("MazeGenerator > GenerateMaze() > OnStart error: " + e); }
     }
 
-    #endregion
-
-    #region Input
-#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
-    //private bool IsKeyDown_W() => Keyboard.current != null && Keyboard.current[Key.W].isPressed;
-    //private bool IsKeyDown_R() => Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame;
-    //private bool IsKeyDown_D() => Keyboard.current != null && Keyboard.current[Key.D].wasPressedThisFrame;
-#else
-        //private bool IsKeyDown_W() => Input.GetKeyDown(KeyCode.W);
-        private bool IsKeyDown_R() => Input.GetKeyDown(KeyCode.R);
-        private bool IsKeyDown_D() => Input.GetKeyDown(KeyCode.D);
-#endif
-
-    private void HandleKeyboardInput()
+    private void Cell_OnNewDiscover(params object[] args)
     {
-        // Move para frente
-        //if (IsKeyDown_W()) MoveToNextCell();//MoveForward();
-        // Girar para a esquerda
-        //if (IsKeyDown_R()) Restart();
-        // Girar para a direita
-        //if (IsKeyDown_D()) RotateCW();
+        totalCellsVisited++;
+        totalCellsVisitedThisEpoch++;
+        //Debug.Log(Time.time.ToString("F3") + " - New discover");
     }
+
+    private void Cell_OnCellVisit(params object[] args)
+    {
+        
+    }
+
     #endregion
 
     #region DFS Recursivo
@@ -133,7 +156,7 @@ public class MazeGenerator : MonoBehaviour
         for (int i = 0; i < neighbors.Count; i++)
         {
             Vector2Int temp = neighbors[i];
-            int rand = Random.Range(0, neighbors.Count);
+            int rand = UnityEngine.Random.Range(0, neighbors.Count);
             neighbors[i] = neighbors[rand];
             neighbors[rand] = temp;
         }
@@ -249,19 +272,9 @@ public class MazeGenerator : MonoBehaviour
         else if (diff.y < 0) { Destroy(a.wallSouth); Destroy(b.wallNorth); } // b está abaixo
     }
 
-    private void RemoveWallForEntry(Vector2Int pos)
-    {
-        Cell c = grid[pos.x, pos.y];
-        if (pos.x == 0) Destroy(c.wallWest);
-        else if (pos.x == sizeX - 1) Destroy(c.wallEast);
-        else if (pos.y == 0) Destroy(c.wallSouth);
-        else if (pos.y == sizeZ - 1) Destroy(c.wallNorth);
-    }
-
     private void RemoveWallForEdge(Vector2Int pos)
     {
         Cell c = grid[pos.x, pos.y]; // pos.x = linha (Z), pos.y = coluna (X)
-
 
         if (pos.x == 0) Destroy(c.wallWest);
         else if (pos.x == sizeX - 1) Destroy(c.wallEast);
@@ -371,64 +384,13 @@ public class MazeGenerator : MonoBehaviour
         return next;
     }
 
-    public Cell GetNeighborSingleStep(Cell current, Vector3 direction)
+    public void Finish()
     {
-        Vector2Int pos = GetCellPosition(current);
-        Vector2Int nextPos = pos;
-
-        if (Mathf.Abs(direction.z) > Mathf.Abs(direction.x))
-        {
-            if (direction.z > 0) nextPos.x += 1; // norte
-            else nextPos.x -= 1; // sul
-        }
-        else
-        {
-            if (direction.x > 0) nextPos.y += 1; // leste
-            else nextPos.y -= 1; // oeste
-        }
-
-        // Limites
-        if (nextPos.x < 0 || nextPos.x >= sizeZ || nextPos.y < 0 || nextPos.y >= sizeX)
-            return null;
-
-        Cell next = grid[nextPos.x, nextPos.y];
-
-        // Só retorna se não houver parede entre as duas células
-        if (!HasNoWallBetween(current, next))
-            return null;
-
-        return next;
+        float timeTaken = Time.time - startTime;
+        try { OnFinish?.Invoke(timeTaken, totalCellsVisited, totalCellsVisitedThisEpoch, epochs); }
+        catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - MazeGenerator > GetNeighbor() > OnFinish error: " + e); }
     }
 
-    public Cell GetNeighborGridAligned(Cell current)
-    {
-        Vector2Int pos = GetCellPosition(current);
-        Vector2Int nextPos = pos;
-
-        // Determina direção baseada na rotação do player
-        float yRot = Mathf.Round(transform.eulerAngles.y) % 360;
-
-        if (yRot == 0f) nextPos.x += 1;      // Norte
-        else if (yRot == 90f) nextPos.y += 1; // Leste
-        else if (yRot == 180f) nextPos.x -= 1; // Sul
-        else if (yRot == 270f) nextPos.y -= 1; // Oeste
-        else return null; // ângulo inválido
-
-        // Limites do grid
-        if (nextPos.x < 0 || nextPos.x >= sizeZ || nextPos.y < 0 || nextPos.y >= sizeX)
-            return null;
-
-        Cell next = grid[nextPos.x, nextPos.y];
-
-        if (!HasNoWallBetween(current, next))
-            return null;
-
-        return next;
-    }
-
-
-    // linha = z (primeiro índice do grid)
-    // coluna = x (segundo índice do grid)
     Vector2Int GetCellPosition(Cell c)
     {
         for (int z = 0; z < sizeZ; z++)
@@ -438,6 +400,25 @@ public class MazeGenerator : MonoBehaviour
         return Vector2Int.zero;
     }
 
+    public void NewEpoch()
+    {
+        epochs++;
+        totalCellsVisitedThisEpoch = 0;
+
+        // Cria um quad de fog sobre cada célula
+        for (int z = 0; z < sizeZ; z++)
+        {
+            for (int x = 0; x < sizeX; x++)
+            {
+                grid[z,x].ResetCell();
+            }
+        }
+
+        CreateFog();
+
+        startTime = Time.time;
+
+    }
 
     private void PositionCameraAbove()
     {
