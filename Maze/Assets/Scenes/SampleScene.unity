@@ -564,6 +564,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InputManager
   player: {fileID: 1117426112}
   cameraManager: {fileID: 1229461897}
+  mazeGenerator: {fileID: 1318434624}
 --- !u!114 &1229461899
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -621,11 +622,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfb2c466f1d261458902ab966db578f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MazeGenerator
-  sizeX: 4
-  sizeZ: 4
+  sizeX: 10
+  sizeZ: 10
   cellWidth: 2
   cellLength: 2
   wallHeight: 2
+  seed: 0
+  shuffling: 0.1
   mode: 1
   cellPrefab: {fileID: 1187869009183476227, guid: e62107afd4a95224ab6c2ab7691712d0, type: 3}
   wallPrefab: {fileID: 2866571087625540839, guid: 0e73f9ae97e4fff49bada8be7da8f97b, type: 3}

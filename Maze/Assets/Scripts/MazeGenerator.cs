@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum MazeMode
@@ -16,6 +17,8 @@ public class MazeGenerator : MonoBehaviour
     public float cellWidth = 2f;
     public float cellLength = 2f;
     public float wallHeight = 2f;
+    public int seed;
+    public float shuffling = 0.1f;
 
     public MazeMode mode = MazeMode.Goal;
 
@@ -37,17 +40,23 @@ public class MazeGenerator : MonoBehaviour
 
     // Statistics
     private float startTime;
-    private int totalCells;
-    private int totalCellsVisited, totalCellsVisitedThisEpoch;
-    private int epochs = 0;
+
+    // Visualization
+    private bool isFogEnabled = true; // Variável pública controlada pelo Editor/código
+    private GameObject fogParent;     // Contêiner de todos os quads de fog
 
     // Eventos
     public delegate void MazeEvent(params object[] args);
+    public event MazeEvent OnLoaded;
     public event MazeEvent OnStart;
     public event MazeEvent OnFinish;
+    public event MazeEvent OnCellDiscovered;
+    public event MazeEvent OnCellVisited;
 
     private void OnDestroy()
     {
+        if (grid == null) return;
+
         // Instancia células
         for (int z = 0; z < sizeZ; z++)
         {
@@ -59,9 +68,14 @@ public class MazeGenerator : MonoBehaviour
         }
     }
 
+    private void Awake()
+    {
+        seed = seed == 0 ? UnityEngine.Random.Range(0, int.MaxValue) : seed;
+    }
+
     void Start()
     {
-        GenerateMaze();
+        GenerateMaze(seed);
     }
 
     #region Geração do Labirinto
@@ -119,28 +133,125 @@ public class MazeGenerator : MonoBehaviour
 
         PositionCameraAbove();
 
+        try { OnLoaded?.Invoke(); }
+        catch (Exception e) { Debug.LogError("MazeGenerator > GenerateMaze() > OnLoaded error: " + e); }
+
         startTime = Time.time;
 
         try { OnStart?.Invoke(startTime); }
         catch (Exception e) { Debug.LogError("MazeGenerator > GenerateMaze() > OnStart error: " + e); }
     }
-
-    private void Cell_OnNewDiscover(params object[] args)
+    public void GenerateMaze(int seed)
     {
-        totalCellsVisited++;
-        totalCellsVisitedThisEpoch++;
-        //Debug.Log(Time.time.ToString("F3") + " - New discover");
+        UnityEngine.Random.InitState(seed);
+        GenerateMaze();
     }
-
-    private void Cell_OnCellVisit(params object[] args)
+    public void GenerateMaze(int seed, float shuffling)
     {
-        
+        UnityEngine.Random.InitState(seed);
+        GenerateMaze(shuffling);
     }
+    public void GenerateMaze(float shuffling)
+    {
+        grid = new Cell[sizeZ, sizeX]; // linhas x colunas (Z x X)
 
+        // Instancia células
+        for (int z = 0; z < sizeZ; z++)
+        {
+            for (int x = 0; x < sizeX; x++)
+            {
+                Vector3 pos = new Vector3(x * cellWidth, 0, z * cellLength);
+                GameObject obj = Instantiate(cellPrefab, pos, Quaternion.identity, transform);
+
+                Cell cell = obj.GetComponent<Cell>();
+                cell.Coordinates = new Vector2Int(x, z);
+                cell.OnCellVisit += Cell_OnCellVisit;
+                cell.OnNewDiscover += Cell_OnNewDiscover;
+                cell.width = cellWidth;
+                cell.length = cellLength;
+                cell.wallHeight = wallHeight;
+
+                cell.UpdateFloor();
+                cell.UpdateBoxCollider();
+                cell.CreateWalls(wallPrefab);
+
+                grid[z, x] = cell;
+            }
+        }
+
+        // Escolhe entrada(s)
+        if (mode == MazeMode.Goal)
+        {
+            playerStart = new Vector2Int(0, 0);
+            targetCell = new Vector2Int(UnityEngine.Random.Range(Mathf.CeilToInt(sizeZ / 2), sizeZ - 1), UnityEngine.Random.Range(Mathf.CeilToInt(sizeX / 2), sizeX - 1));
+        }
+        else if (mode == MazeMode.Exit)
+        {
+            playerStart = new Vector2Int(0, 0);
+            targetCell = new Vector2Int(sizeZ - 1, sizeX - 1);
+        }
+
+        // Remove aberturas agora **após criar todas as células**
+        RemoveWallForEdge(playerStart);
+        if (mode == MazeMode.Exit)
+            RemoveWallForEdge(targetCell);
+
+        // Gera labirinto via DFS
+        GenerateMazeDFS(playerStart.x, playerStart.y, new bool[sizeZ, sizeX], shuffling);
+
+        // Para modo Goal, seleciona célula alvo mais distante
+        if (mode == MazeMode.Goal)
+            targetCell = FindFurthestCell(playerStart);
+
+        PositionCameraAbove();
+
+        try { OnLoaded?.Invoke(); }
+        catch (Exception e) { Debug.LogError("MazeGenerator > GenerateMaze() > OnLoaded error: " + e); }
+
+        startTime = Time.time;
+
+        try { OnStart?.Invoke(startTime); }
+        catch (Exception e) { Debug.LogError("MazeGenerator > GenerateMaze() > OnStart error: " + e); }
+    }
     #endregion
 
     #region DFS Recursivo
     private void GenerateMazeDFS(int row, int col, bool[,] visited)
+    {
+        visited[row, col] = true; 
+        
+        List<Vector2Int> neighbors = new List<Vector2Int> 
+        { 
+            new Vector2Int(row - 1, col), // cima
+            new Vector2Int(row + 1, col), // baixo
+            new Vector2Int(row, col - 1), // esquerda
+            new Vector2Int(row, col + 1) // direita
+        }; // Embaralha os vizinhos
+
+        for (int i = 0; i < neighbors.Count; i++) 
+        { 
+            Vector2Int temp = neighbors[i]; 
+            int rand = UnityEngine.Random.Range(0, neighbors.Count); 
+            neighbors[i] = neighbors[rand]; neighbors[rand] = temp; 
+        } 
+        
+        foreach (var n in neighbors) 
+        { 
+            int nRow = n.x; 
+            int nCol = n.y; // Checa limites usando sizeZ (linhas) e sizeX (colunas)
+
+            if (nRow >= 0 && nRow < sizeZ && nCol >= 0 && nCol < sizeX && !visited[nRow, nCol]) 
+            { 
+                RemoveWallBetween(grid[row, col], grid[nRow, nCol]); 
+                GenerateMazeDFS(nRow, nCol, visited); 
+            } 
+        } 
+        
+        CreateFog(); 
+    }
+
+    // shuffling: embaralhamento > 0 (nenhum) a 1 (total = 100%)
+    private void GenerateMazeDFS(int row, int col, bool[,] visited, float shuffling = 1f)
     {
         visited[row, col] = true;
 
@@ -152,14 +263,10 @@ public class MazeGenerator : MonoBehaviour
         new Vector2Int(row, col + 1)  // direita
     };
 
-        // Embaralha os vizinhos
-        for (int i = 0; i < neighbors.Count; i++)
-        {
-            Vector2Int temp = neighbors[i];
-            int rand = UnityEngine.Random.Range(0, neighbors.Count);
-            neighbors[i] = neighbors[rand];
-            neighbors[rand] = temp;
-        }
+        // Embaralhamento leve seguro
+        neighbors = neighbors
+            .OrderBy(n => UnityEngine.Random.Range(0f, 1f) * shuffling + n.x * (1f - shuffling))
+            .ToList();
 
         foreach (var n in neighbors)
         {
@@ -170,16 +277,25 @@ public class MazeGenerator : MonoBehaviour
             if (nRow >= 0 && nRow < sizeZ && nCol >= 0 && nCol < sizeX && !visited[nRow, nCol])
             {
                 RemoveWallBetween(grid[row, col], grid[nRow, nCol]);
-                GenerateMazeDFS(nRow, nCol, visited);
+                GenerateMazeDFS(nRow, nCol, visited, shuffling);
             }
         }
 
         CreateFog();
     }
 
-
     public void CreateFog()
     {
+        // 1. Cria ou limpa o objeto pai
+        if (fogParent != null)
+        {
+            Destroy(fogParent);
+        }
+
+        // Cria um novo objeto vazio para conter todos os quads de fog
+        fogParent = new GameObject("FogOfWar_Parent");
+        fogParent.transform.SetParent(transform); // Anexa ao seu objeto principal
+
         // Remove fog antigo se houver
         foreach (var f in fogList)
         {
@@ -205,7 +321,7 @@ public class MazeGenerator : MonoBehaviour
 
                 GameObject fog = GameObject.CreatePrimitive(PrimitiveType.Quad);
                 fog.name = $"Fog_{x}_{z}";
-                fog.transform.SetParent(transform, true);
+                fog.transform.SetParent(fogParent.transform, true); //fog.transform.SetParent(transform, true);
                 fog.transform.localScale = new Vector3(cellWidth, cellLength, 1);
                 fog.transform.position = fogPos;
                 fog.transform.rotation = Quaternion.Euler(90f, 0f, 0f); // deitado sobre o labirinto
@@ -226,6 +342,16 @@ public class MazeGenerator : MonoBehaviour
 
                 fogList.Add(fog);
             }
+        }
+    }
+
+    public void ToggleFog()
+    {
+        Debug.Log("ToggleFog");
+        if (fogParent != null)
+        {
+            isFogEnabled = !isFogEnabled;
+            fogParent.SetActive(isFogEnabled);
         }
     }
 
@@ -387,7 +513,7 @@ public class MazeGenerator : MonoBehaviour
     public void Finish()
     {
         float timeTaken = Time.time - startTime;
-        try { OnFinish?.Invoke(timeTaken, totalCellsVisited, totalCellsVisitedThisEpoch, epochs); }
+        try { OnFinish?.Invoke(timeTaken); }
         catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - MazeGenerator > GetNeighbor() > OnFinish error: " + e); }
     }
 
@@ -402,9 +528,6 @@ public class MazeGenerator : MonoBehaviour
 
     public void NewEpoch()
     {
-        epochs++;
-        totalCellsVisitedThisEpoch = 0;
-
         // Cria um quad de fog sobre cada célula
         for (int z = 0; z < sizeZ; z++)
         {
@@ -440,4 +563,16 @@ public class MazeGenerator : MonoBehaviour
     }
 
     #endregion
+
+    private void Cell_OnNewDiscover(params object[] args)
+    {
+        try { OnCellDiscovered?.Invoke(args[0]); }
+        catch (Exception e) { Debug.LogError("MazeGenerator > GenerateMaze() > OnCellDiscovered error: " + e); }
+    }
+
+    private void Cell_OnCellVisit(params object[] args)
+    {
+        try { OnCellVisited?.Invoke(args[0]); }
+        catch (Exception e) { Debug.LogError("MazeGenerator > GenerateMaze() > OnCellVisited error: " + e); }
+    }
 }

@@ -50,11 +50,11 @@ public class Cell : MonoBehaviour
             if (!discovered)
             {
                 discovered = true;
-                try { OnNewDiscover?.Invoke(); }
+                try { OnNewDiscover?.Invoke(Coordinates); }
                 catch (Exception e) { Debug.LogError("Cell > OnTriggerEnter() > OnNewDiscover error: " + e); }
             }
             visitCount++;
-            try { OnCellVisit?.Invoke(); }
+            try { OnCellVisit?.Invoke(Coordinates); }
             catch (Exception e) { Debug.LogError("Cell > OnTriggerEnter() > OnCellVisit error: " + e); }
             ChangeColor();
         }
