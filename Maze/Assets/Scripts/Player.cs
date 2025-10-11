@@ -139,18 +139,16 @@ public class Player : MonoBehaviour
 
     public void Restart()
     {
-        if (!isPlaying)
-            StartTimer();
         epochs++;
         rotationsCurrentEpoch = 0;
         leftRotationsCurrentEpoch = 0;
         rightRotationsCurrentEpoch = 0;
         stepsCurrentEpoch = 0;
         movesCurrentEpoch = 0;
+        timer += timerCurrentEpoch;
         timerCurrentEpoch = 0;
         cellsDiscoveredCurrentEpoch = 0;
         cellsVisitedCurrentEpoch = 0;
-        timer += timerCurrentEpoch;
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
         currentCell = maze.GetCell(maze.playerStart);
@@ -183,12 +181,8 @@ public class Player : MonoBehaviour
 
     private void StartTimer()
     {
-        if (moves == 0)
-        {
-            Debug.Log(isPlaying);
+        if (movesCurrentEpoch == 0)
             isPlaying = true;
-            Debug.Log(isPlaying);
-        }
     }
 
     private IEnumerator MoveAndTriggerSequence(Cell next, Vector3 novaPosicao)

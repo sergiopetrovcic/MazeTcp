@@ -101,7 +101,7 @@ public class GUIStats : MonoBehaviour
         GUI.Label(new Rect(_hi, _vi + 5 * _vs, _width, _height), "- Moves (rotations + steps): " + player.movesCurrentEpoch, _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 6 * _vs, _width, _height), "- Cells discovered: " + player.cellsDiscoveredCurrentEpoch, _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 7 * _vs, _width, _height), "- Cells visited: " + player.cellsVisitedCurrentEpoch, _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 8 * _vs, _width, _height), "- Timer: " + player.timerCurrentEpoch / 1000, _styleWhite);//, "box");
+        GUI.Label(new Rect(_hi, _vi + 8 * _vs, _width, _height), "- Timer: " + (player.timerCurrentEpoch / 1000).ToString("0.0"), _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 9 * _vs, _width, _height), "- - - - - - - - - - - - - - - - - - - - - - - - - -", _styleWhite);//, "box");
         GUI.Label(new Rect(0, -18 + 10 * _vs, _width, _height), "All epochs", _styleWhiteCenter);//, "box");
         GUI.Label(new Rect(_hi, _vi + 11 * _vs, _width, _height), "- Left rotations: " + player.leftRotations, _styleWhite);//, "box");
@@ -111,7 +111,7 @@ public class GUIStats : MonoBehaviour
         GUI.Label(new Rect(_hi, _vi + 15 * _vs, _width, _height), "- Moves (rotations + steps): " + player.moves, _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 16 * _vs, _width, _height), "- Cells discovered: " + player.cellsDiscovered, _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 17 * _vs, _width, _height), "- Cells visited: " + player.cellsVisited, _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 18 * _vs, _width, _height), "- Timer: " + player.timer / 1000, _styleWhite);//, "box");
+        GUI.Label(new Rect(_hi, _vi + 18 * _vs, _width, _height), "- Timer: " + ((player.timer + player.timerCurrentEpoch) / 1000).ToString("0.0"), _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 19 * _vs, _width, _height), "- - - - - - - - - - - - - - - - - - - - - - - - - -", _styleWhite);//, "box");
         GUI.Label(new Rect(0, -18 + 20 * _vs, _width, _height), "Shortcuts", _styleWhiteCenter);//, "box");
         GUI.Label(new Rect(_hi, _vi + 21 * _vs, _width, _height), "[X] - Save config", _styleWhite);//, "box");
