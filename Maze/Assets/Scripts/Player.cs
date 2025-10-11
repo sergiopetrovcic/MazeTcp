@@ -31,6 +31,9 @@ public class Player : MonoBehaviour
     [HideInInspector] public int cellsDiscoveredCurrentEpoch = 0;
     [HideInInspector] public int cellsVisitedCurrentEpoch = 0;
 
+    private bool isPlaying = false;
+    private float startTimer;
+
     // Eventos
     public delegate void PlayerEvent(params object[] args);
     public event PlayerEvent OnStep;
@@ -38,6 +41,7 @@ public class Player : MonoBehaviour
     public event PlayerEvent OnRotateRight;
     public event PlayerEvent OnRotate;
     public event PlayerEvent OnMove;
+    
 
     private void Awake()
     {
@@ -60,7 +64,7 @@ public class Player : MonoBehaviour
 
     private void Maze_OnFinish(params object[] args)
     {
-        Debug.Log(Time.time.ToString("F3") + " - Época " + epochs + " encerrada em " + args[0] + " segundos com " + args[2] + " células visitadas! Total de células visitadas é " + args[1] + ".");
+        isPlaying = false;
         Restart();
     }
 
@@ -84,6 +88,12 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        if (isPlaying)
+        {
+            Debug.Log(timerCurrentEpoch);
+            timerCurrentEpoch += Time.time - startTimer;
+        }
+
         if (maze != null)
             maze.RevealFog(transform.position, visionRadius);
     }
@@ -91,6 +101,8 @@ public class Player : MonoBehaviour
     #region Inputs
     public void RotateCCW()
     {
+        if (!isPlaying)
+            StartTimer();
         transform.Rotate(0f, -90f, 0f, Space.World);
         leftRotationsCurrentEpoch++;
         rotationsCurrentEpoch++;
@@ -108,6 +120,8 @@ public class Player : MonoBehaviour
 
     public void RotateCW()
     {
+        if (!isPlaying)
+            StartTimer();
         transform.Rotate(0f, 90f, 0f, Space.World);
         rightRotationsCurrentEpoch++;
         rotationsCurrentEpoch++;
@@ -125,6 +139,8 @@ public class Player : MonoBehaviour
 
     public void Restart()
     {
+        if (!isPlaying)
+            StartTimer();
         epochs++;
         rotationsCurrentEpoch = 0;
         leftRotationsCurrentEpoch = 0;
@@ -134,6 +150,7 @@ public class Player : MonoBehaviour
         timerCurrentEpoch = 0;
         cellsDiscoveredCurrentEpoch = 0;
         cellsVisitedCurrentEpoch = 0;
+        timer += timerCurrentEpoch;
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
         currentCell = maze.GetCell(maze.playerStart);
@@ -142,6 +159,8 @@ public class Player : MonoBehaviour
 
     public void MoveToNextCell()
     {
+        if (!isPlaying)
+            StartTimer();
         Cell next = maze.GetNeighbor(currentCell, transform.forward);
         if (next != null)
         {
@@ -161,6 +180,16 @@ public class Player : MonoBehaviour
             Debug.Log("Parede bloqueando o caminho ou fora dos limites.");
     }
     #endregion
+
+    private void StartTimer()
+    {
+        if (moves == 0)
+        {
+            Debug.Log(isPlaying);
+            isPlaying = true;
+            Debug.Log(isPlaying);
+        }
+    }
 
     private IEnumerator MoveAndTriggerSequence(Cell next, Vector3 novaPosicao)
     {

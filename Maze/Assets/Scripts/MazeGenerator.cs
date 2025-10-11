@@ -512,8 +512,7 @@ public class MazeGenerator : MonoBehaviour
 
     public void Finish()
     {
-        float timeTaken = Time.time - startTime;
-        try { OnFinish?.Invoke(timeTaken); }
+        try { OnFinish?.Invoke(); }
         catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - MazeGenerator > GetNeighbor() > OnFinish error: " + e); }
     }
 
