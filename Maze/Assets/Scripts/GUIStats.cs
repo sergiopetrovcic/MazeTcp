@@ -93,7 +93,7 @@ public class GUIStats : MonoBehaviour
         int _width = 280;
         int _height = 100;
         // Draw any Controls inside the window here
-        GUI.Label(new Rect(0, -18, _width, _height), "Current epoch: " + player.epochs, _styleWhiteCenter);//, "box");
+        GUI.Label(new Rect(0, -18, _width, _height), "Current epoch: " + player.epochCurrent, _styleWhiteCenter);//, "box");
         GUI.Label(new Rect(_hi, _vi + 1 * _vs, _width, _height), "- Left rotations: " + player.leftRotationsCurrentEpoch, _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 2 * _vs, _width, _height), "- Right rotations: " + player.rightRotationsCurrentEpoch, _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 3 * _vs, _width, _height), "- Total rotations (left + right): " + player.rotationsCurrentEpoch, _styleWhite);//, "box");

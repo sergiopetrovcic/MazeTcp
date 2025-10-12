@@ -1,17 +1,20 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public string name = "player01";
     public MazeGenerator maze;
     public Cell cell;
     public float visionRadius = 10f;
     public Cell currentCell;
     private Vector3 targetPosition;
+    private List<PlayerEpoch> epochs = new List<PlayerEpoch>();
 
     // Statistics
-    [HideInInspector] public int epochs = 0;
+    [HideInInspector] public int epochCurrent = 0;
 
     [HideInInspector] public int rotations = 0;
     [HideInInspector] public int leftRotations = 0;
@@ -139,7 +142,18 @@ public class Player : MonoBehaviour
 
     public void Restart()
     {
-        epochs++;
+        epochs.Add(new PlayerEpoch(
+            name,
+            epochCurrent,
+            rotationsCurrentEpoch,
+            leftRotationsCurrentEpoch,
+            rightRotationsCurrentEpoch,
+            stepsCurrentEpoch,
+            movesCurrentEpoch,
+            timerCurrentEpoch,
+            cellsDiscoveredCurrentEpoch,
+            cellsVisitedCurrentEpoch));
+        epochCurrent++;
         rotationsCurrentEpoch = 0;
         leftRotationsCurrentEpoch = 0;
         rightRotationsCurrentEpoch = 0;
