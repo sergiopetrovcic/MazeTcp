@@ -14,8 +14,8 @@ public class MazeGenerator : MonoBehaviour
     [Header("Configuração do Labirinto")]
     public int sizeX = 10;
     public int sizeZ = 10;
-    public float cellWidth = 2f;
-    public float cellLength = 2f;
+    private float cellWidth = 2f;
+    private float cellLength = 2f;
     public float wallHeight = 2f;
     public int seed;
     public float shuffling = 0.1f;

@@ -622,10 +622,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfb2c466f1d261458902ab966db578f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MazeGenerator
-  sizeX: 10
-  sizeZ: 10
-  cellWidth: 2
-  cellLength: 2
+  sizeX: 4
+  sizeZ: 4
   wallHeight: 2
   seed: 0
   shuffling: 0.1
@@ -809,6 +807,10 @@ PrefabInstance:
     - target: {fileID: 9046279406710175271, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
       propertyPath: visionRadius
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 9046279406710175271, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
+      propertyPath: sensorMaxDistance
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

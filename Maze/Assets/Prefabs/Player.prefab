@@ -239,7 +239,7 @@ GameObject:
   - component: {fileID: 5092787817495055575}
   - component: {fileID: 873281060278533806}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -489,6 +489,7 @@ GameObject:
   - component: {fileID: 1915635901712211376}
   - component: {fileID: 9046279406710175271}
   - component: {fileID: 687167343050807119}
+  - component: {fileID: 2156471003864225404}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -606,11 +607,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd96704e7bc81434a8059b6480a5c8f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+  name: player01
   maze: {fileID: 0}
+  cell: {fileID: 0}
   visionRadius: 1
-  rotationDuration: 0.6
   currentCell: {fileID: 0}
-  moveSpeed: 3
+  epochCurrent: 0
+  rotations: 0
+  leftRotations: 0
+  rightRotations: 0
+  steps: 0
+  moves: 0
+  timer: 0
+  cellsDiscovered: 0
+  cellsVisited: 0
+  rotationsCurrentEpoch: 0
+  leftRotationsCurrentEpoch: 0
+  rightRotationsCurrentEpoch: 0
+  stepsCurrentEpoch: 0
+  movesCurrentEpoch: 0
+  timerCurrentEpoch: 0
+  cellsDiscoveredCurrentEpoch: 0
+  cellsVisitedCurrentEpoch: 0
 --- !u!54 &687167343050807119
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -638,6 +656,24 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
+--- !u!114 &2156471003864225404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7590951292965798748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 668ba80c3e5aafe4c8008080d59d9eca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Sensor
+  distance: 1
+  detectLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  drawGizmos: 1
+  originOffset: 0.3
 --- !u!1 &8161592791022019339
 GameObject:
   m_ObjectHideFlags: 0

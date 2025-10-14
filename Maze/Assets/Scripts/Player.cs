@@ -13,6 +13,17 @@ public class Player : MonoBehaviour
     private Vector3 targetPosition;
     private List<PlayerEpoch> epochs = new List<PlayerEpoch>();
 
+    [Header("Sensors")]
+    public float sensorMaxDistance = 1.0f;     // 30 cm
+    public LayerMask obstacleMask = ~0;         // layers considered obstacle
+    public Transform sensorsRoot;               // optional root transform for sensors; if null, use robot transform
+    private Vector3[] frontDirs;                // sensor directions precomputed
+    //private Vector3[] backDirs;                 // sensor directions precomputed
+    private Vector3[] sensorOffsets;            // sensor origins (positions relative to robot)
+    
+    [Header("Debug/State")]
+    public bool debugDrawRays = true;
+
     // Statistics
     [HideInInspector] public int epochCurrent = 0;
 
@@ -51,6 +62,33 @@ public class Player : MonoBehaviour
         maze.OnCellDiscovered += Maze_OnCellDiscovered;
         maze.OnCellVisited += Maze_OnCellVisited;
         maze.OnFinish += Maze_OnFinish;
+
+        // default sensors root
+        if (sensorsRoot == null) sensorsRoot = transform;
+
+        // prepare directions: front 0, +45, -45 ; back 180, 180+45, 180-45
+        frontDirs = new Vector3[3];
+        //backDirs = new Vector3[3];
+
+        frontDirs[0] = Quaternion.Euler(0, 0, 0) * Vector3.forward;
+        frontDirs[1] = Quaternion.Euler(0, 90f, 0) * Vector3.forward;
+        frontDirs[2] = Quaternion.Euler(0, -90f, 0) * Vector3.forward;
+
+        //backDirs[0] = Quaternion.Euler(0, 180f, 0) * Vector3.forward;
+        //backDirs[1] = Quaternion.Euler(0, 180f + 45f, 0) * Vector3.forward;
+        //backDirs[2] = Quaternion.Euler(0, 180f - 45f, 0) * Vector3.forward;
+
+        // sensor offsets (you can tune these in inspector by editing code or add public transforms)
+        sensorOffsets = new Vector3[3];
+        float forwardOffset = 0.5f; // half meter in front/back (adjust as robot size)
+        float heightOffset = 0.2f;  // sensor height above ground
+        // front center, front +45, front -45, back center, back +45, back -45
+        sensorOffsets[0] = new Vector3(0f, heightOffset, forwardOffset);
+        sensorOffsets[1] = new Vector3(0f, heightOffset, forwardOffset);
+        sensorOffsets[2] = new Vector3(0f, heightOffset, forwardOffset);
+        //sensorOffsets[3] = new Vector3(0f, heightOffset, -forwardOffset);
+        //sensorOffsets[4] = new Vector3(0f, heightOffset, -forwardOffset);
+        //sensorOffsets[5] = new Vector3(0f, heightOffset, -forwardOffset);
     }
 
     private void Maze_OnCellVisited(params object[] args)
@@ -87,15 +125,15 @@ public class Player : MonoBehaviour
         currentCell = maze.GetCell(maze.playerStart);
         transform.position = currentCell.transform.position + Vector3.up * 1f; // acima do chão
         targetPosition = transform.position;
+
+        float[] dist = GetSensorDistances();
+        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
     }
 
     void Update()
     {
         if (isPlaying)
-        {
-            Debug.Log(timerCurrentEpoch);
             timerCurrentEpoch += Time.time - startTimer;
-        }
 
         if (maze != null)
             maze.RevealFog(transform.position, visionRadius);
@@ -106,6 +144,7 @@ public class Player : MonoBehaviour
     {
         if (!isPlaying)
             StartTimer();
+
         transform.Rotate(0f, -90f, 0f, Space.World);
         leftRotationsCurrentEpoch++;
         rotationsCurrentEpoch++;
@@ -113,6 +152,10 @@ public class Player : MonoBehaviour
         leftRotations++;
         rotations++;
         moves++;
+
+        float[] dist = GetSensorDistances();
+        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
+
         try { OnRotateLeft?.Invoke(); }
         catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > RotateCCW() > OnRotateLeft error: " + e); }
         try { OnRotate?.Invoke(); }
@@ -132,6 +175,10 @@ public class Player : MonoBehaviour
         rightRotations++;
         rotations++;
         moves++;
+
+        float[] dist = GetSensorDistances();
+        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
+
         try { OnRotateRight?.Invoke(); }
         catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > RotateCW() > OnRotateRight error: " + e); }
         try { OnRotate?.Invoke(); }
@@ -173,6 +220,7 @@ public class Player : MonoBehaviour
     {
         if (!isPlaying)
             StartTimer();
+
         Cell next = maze.GetNeighbor(currentCell, transform.forward);
         if (next != null)
         {
@@ -181,6 +229,10 @@ public class Player : MonoBehaviour
             movesCurrentEpoch++;
             steps++;
             moves++;
+
+            float[] dist = GetSensorDistances();
+            Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
+
             try { OnStep?.Invoke(); }
             catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > MoveToNextCell() > OnStep error: " + e); }
             try { OnMove?.Invoke(); }
@@ -209,4 +261,60 @@ public class Player : MonoBehaviour
         if (next.Coordinates == maze.targetCell)
             maze.Finish();
     }
+
+    // --- Sensors and safety ---
+    /// <summary>
+    /// Casts the 6 rays and returns distances (meters). If nothing hit, returns sensorMaxDistance.
+    /// Order: front center, front +45, front -45, back center, back +45, back -45
+    /// </summary>
+    public float[] GetSensorDistances()
+    {
+        float[] dists = new float[6];
+        Vector3 rootPos = sensorsRoot.position;
+
+        // front sensors
+        for (int i = 0; i < 3; i++)
+        {
+            Vector3 origin = sensorsRoot.TransformPoint(sensorOffsets[i]);
+            Vector3 dir = sensorsRoot.TransformDirection(frontDirs[i]);
+            dists[i] = RayDistance(origin, dir);
+            if (debugDrawRays) DebugDrawRay(origin, dir, dists[i], Color.red);
+        }
+
+        /*// back sensors (indices 3..5)
+        for (int i = 0; i < 3; i++)
+        {
+            Vector3 origin = sensorsRoot.TransformPoint(sensorOffsets[3 + i]);
+            Vector3 dir = sensorsRoot.TransformDirection(backDirs[i]);
+            dists[3 + i] = RayDistance(origin, dir);
+            if (debugDrawRays) DebugDrawRay(origin, dir, dists[3 + i], Color.blue);
+        }*/
+
+        return dists;
+    }
+
+    private float RayDistance(Vector3 origin, Vector3 dir)
+    {
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, sensorMaxDistance, obstacleMask))
+        {
+            return hit.distance;
+        }
+        return 0;
+    }
+
+
+    private void DebugDrawRay(Vector3 origin, Vector3 dir, float dist, Color col)
+    {
+        Vector3 end = origin + dir.normalized * dist;
+        Debug.DrawLine(origin, end, col);
+    }
+
+    // --- Debug: editor button, not required ---
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        sensorMaxDistance = Mathf.Max(0.01f, sensorMaxDistance);
+        //gpsErrorMeters = Mathf.Max(0f, gpsErrorMeters);
+    }
+#endif
 }
