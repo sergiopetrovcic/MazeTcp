@@ -20,7 +20,8 @@ public class Player : MonoBehaviour
     private Vector3[] frontDirs;                // sensor directions precomputed
     //private Vector3[] backDirs;                 // sensor directions precomputed
     private Vector3[] sensorOffsets;            // sensor origins (positions relative to robot)
-    
+    private bool pendingSensorRead = true;
+
     [Header("Debug/State")]
     public bool debugDrawRays = true;
 
@@ -62,6 +63,7 @@ public class Player : MonoBehaviour
         maze.OnCellDiscovered += Maze_OnCellDiscovered;
         maze.OnCellVisited += Maze_OnCellVisited;
         maze.OnFinish += Maze_OnFinish;
+        this.OnMove += Player_OnMove;
 
         // default sensors root
         if (sensorsRoot == null) sensorsRoot = transform;
@@ -89,6 +91,11 @@ public class Player : MonoBehaviour
         //sensorOffsets[3] = new Vector3(0f, heightOffset, -forwardOffset);
         //sensorOffsets[4] = new Vector3(0f, heightOffset, -forwardOffset);
         //sensorOffsets[5] = new Vector3(0f, heightOffset, -forwardOffset);
+    }
+
+    private void Player_OnMove(params object[] args)
+    {
+        pendingSensorRead = true;
     }
 
     private void Maze_OnCellVisited(params object[] args)
@@ -137,6 +144,18 @@ public class Player : MonoBehaviour
 
         if (maze != null)
             maze.RevealFog(transform.position, visionRadius);
+
+        if (pendingSensorRead)
+        {
+            ReadSensors();
+            pendingSensorRead = false;
+        }
+    }
+
+    private void ReadSensors()
+    { 
+        float[] dist = GetSensorDistances();
+        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
     }
 
     #region Inputs
@@ -152,9 +171,6 @@ public class Player : MonoBehaviour
         leftRotations++;
         rotations++;
         moves++;
-
-        float[] dist = GetSensorDistances();
-        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
 
         try { OnRotateLeft?.Invoke(); }
         catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > RotateCCW() > OnRotateLeft error: " + e); }
@@ -175,9 +191,6 @@ public class Player : MonoBehaviour
         rightRotations++;
         rotations++;
         moves++;
-
-        float[] dist = GetSensorDistances();
-        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
 
         try { OnRotateRight?.Invoke(); }
         catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > RotateCW() > OnRotateRight error: " + e); }
@@ -229,9 +242,6 @@ public class Player : MonoBehaviour
             movesCurrentEpoch++;
             steps++;
             moves++;
-
-            float[] dist = GetSensorDistances();
-            Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
 
             try { OnStep?.Invoke(); }
             catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > MoveToNextCell() > OnStep error: " + e); }
