@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -197,6 +196,9 @@ public class Player : MonoBehaviour
         if (pendingSensorRead)
         {
             ReadSensors();
+            PlayerState state = new PlayerState(sensorsStatus);
+            Debug.Log("Player State: " + JsonUtility.ToJson(state));
+            tcpServer.Broadcast(JsonUtility.ToJson(state));
             pendingSensorRead = false;
         }
     }
@@ -204,7 +206,6 @@ public class Player : MonoBehaviour
     private void ReadSensors()
     { 
         sensorsStatus = GetSensorDistances();
-        //Debug.Log("Distances: forward = " + sensorsStatus[0] + " - right = " + sensorsStatus[1] + " - left = " + sensorsStatus[2]);
     }
 
     #region Inputs
@@ -328,7 +329,7 @@ public class Player : MonoBehaviour
     /// </summary>
     public float[] GetSensorDistances()
     {
-        float[] dists = new float[6];
+        float[] dists = new float[3];
         Vector3 rootPos = sensorsRoot.position;
 
         // front sensors
@@ -396,5 +397,14 @@ public class PlayerCommandStructure
 [System.Serializable]
 public class PlayerState
 {
-    public float[] sensors;
+    public float SensorLeft;
+    public float SensorForward;
+    public float SensorRight;
+
+    public PlayerState(float[] sensors)
+    {
+        SensorLeft = sensors != null && sensors.Length > 2 ? MathF.Round(sensors[2], 2) : 0f;
+        SensorForward = sensors != null && sensors.Length > 0 ? MathF.Round(sensors[0], 2) : 0f;
+        SensorRight = sensors != null && sensors.Length > 1 ? MathF.Round(sensors[1], 2) : 0f;
+    }
 }

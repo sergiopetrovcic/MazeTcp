@@ -109,7 +109,6 @@ public class UnityTcpServer : MonoBehaviour
         catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - UnityTcpServer > StopServer() > OnServerDisconnected error: " + e); }
     }
 
-
     private void ServerLoop()
     {
         try
