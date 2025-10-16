@@ -498,6 +498,7 @@ GameObject:
   - component: {fileID: 1229461897}
   - component: {fileID: 1229461898}
   - component: {fileID: 1229461899}
+  - component: {fileID: 1229461900}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -578,6 +579,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GUIStats
   player: {fileID: 1117426112}
+--- !u!114 &1229461900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229461894}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddaf7cbdb24cc784484e42ac8120b5e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityTcpServer
+  port: 5005
 --- !u!1 &1318434622
 GameObject:
   m_ObjectHideFlags: 0
@@ -804,6 +818,10 @@ PrefabInstance:
       propertyPath: maze
       value: 
       objectReference: {fileID: 1318434624}
+    - target: {fileID: 9046279406710175271, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
+      propertyPath: tcpServer
+      value: 
+      objectReference: {fileID: 1229461900}
     - target: {fileID: 9046279406710175271, guid: a7cf44fc16875ed4bb406f40dcee97cd, type: 3}
       propertyPath: visionRadius
       value: 3

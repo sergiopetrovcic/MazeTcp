@@ -6,7 +6,11 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public string name = "player01";
+
+    public UnityTcpServer tcpServer;
+
     public MazeGenerator maze;
+
     public Cell cell;
     public float visionRadius = 10f;
     public Cell currentCell;
@@ -14,13 +18,14 @@ public class Player : MonoBehaviour
     private List<PlayerEpoch> epochs = new List<PlayerEpoch>();
 
     [Header("Sensors")]
-    public float sensorMaxDistance = 1.0f;     // 30 cm
+    public float sensorMaxDistance = 1.0f;
     public LayerMask obstacleMask = ~0;         // layers considered obstacle
     public Transform sensorsRoot;               // optional root transform for sensors; if null, use robot transform
     private Vector3[] frontDirs;                // sensor directions precomputed
-    //private Vector3[] backDirs;                 // sensor directions precomputed
+    //private Vector3[] backDirs;               // sensor directions precomputed
     private Vector3[] sensorOffsets;            // sensor origins (positions relative to robot)
     private bool pendingSensorRead = true;
+    private float[] sensorsStatus;              // last read sensor distances
 
     [Header("Debug/State")]
     public bool debugDrawRays = true;
@@ -64,6 +69,7 @@ public class Player : MonoBehaviour
         maze.OnCellVisited += Maze_OnCellVisited;
         maze.OnFinish += Maze_OnFinish;
         this.OnMove += Player_OnMove;
+        tcpServer.OnMessageArrived += tcpServer_OnMessageArrived;
 
         // default sensors root
         if (sensorsRoot == null) sensorsRoot = transform;
@@ -116,6 +122,11 @@ public class Player : MonoBehaviour
         Restart();
     }
 
+    private void tcpServer_OnMessageArrived(params object[] args)
+    {
+        Debug.Log("Player > tcpServer_OnMessageArrived: " + args[0]);
+    }
+
     private void OnDestroy()
     {
         maze.OnFinish -= Maze_OnFinish;
@@ -132,9 +143,6 @@ public class Player : MonoBehaviour
         currentCell = maze.GetCell(maze.playerStart);
         transform.position = currentCell.transform.position + Vector3.up * 1f; // acima do chão
         targetPosition = transform.position;
-
-        float[] dist = GetSensorDistances();
-        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
     }
 
     void Update()
@@ -154,8 +162,8 @@ public class Player : MonoBehaviour
 
     private void ReadSensors()
     { 
-        float[] dist = GetSensorDistances();
-        Debug.Log("Distances: forward = " + dist[0] + " - right = " + dist[1] + " - left = " + dist[2]);
+        sensorsStatus = GetSensorDistances();
+        //Debug.Log("Distances: forward = " + sensorsStatus[0] + " - right = " + sensorsStatus[1] + " - left = " + sensorsStatus[2]);
     }
 
     #region Inputs

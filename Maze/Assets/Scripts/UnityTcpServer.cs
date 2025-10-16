@@ -18,6 +18,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class UnityTcpServer : MonoBehaviour
@@ -32,6 +33,14 @@ public class UnityTcpServer : MonoBehaviour
     private Thread serverThread;
     private List<TcpClient> clients = new List<TcpClient>();
     private bool running = false;
+
+    // Eventos
+    public delegate void UnityTcpServerEvent(params object[] args);
+    public event UnityTcpServerEvent OnClientConnected;
+    public event UnityTcpServerEvent OnClientDisconnected;
+    public event UnityTcpServerEvent OnServerStarted;
+    public event UnityTcpServerEvent OnServerDisconnected;
+    public event UnityTcpServerEvent OnMessageArrived;
 
     void Start()
     {
@@ -64,18 +73,42 @@ public class UnityTcpServer : MonoBehaviour
         serverThread = new Thread(ServerLoop);
         serverThread.Start();
         Debug.Log("UnityTcpServer > Servidor TCP iniciado na porta " + port);
+        try { OnServerStarted?.Invoke(port); }
+        catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - UnityTcpServer > StartServer() > OnServerStarted error: " + e); }
     }
 
     public void StopServer()
     {
         running = false;
-        foreach (var client in clients)
-            client.Close();
 
-        server?.Stop();
-        serverThread?.Abort();
+        try
+        {
+            // Fecha o listener
+            server?.Stop();
+        }
+        catch { }
+
+        // Fecha todos os clientes conectados
+        lock (clients)
+        {
+            foreach (var client in clients)
+            {
+                try { client.Close(); } catch { }
+            }
+            clients.Clear();
+        }
+
+        // Espera a thread encerrar graciosamente
+        if (serverThread != null && serverThread.IsAlive)
+        {
+            serverThread.Join(100); // espera até 100ms
+        }
+
         Debug.Log("UnityTcpServer > Servidor TCP parado.");
+        try { OnServerDisconnected?.Invoke(); }
+        catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - UnityTcpServer > StopServer() > OnServerDisconnected error: " + e); }
     }
+
 
     private void ServerLoop()
     {
@@ -90,7 +123,9 @@ public class UnityTcpServer : MonoBehaviour
                 {
                     TcpClient client = server.AcceptTcpClient();
                     lock (clients) clients.Add(client);
-                    Debug.Log("UnityTcpServer > Novo cliente conectado: " + client.Client.RemoteEndPoint + ".");
+                    Debug.Log("UnityTcpServer > ServerLoop() > Novo cliente conectado: " + client.Client.RemoteEndPoint + ".");
+                    try { OnClientConnected?.Invoke(client.Client.RemoteEndPoint); }
+                    catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - UnityTcpServer > ServerLoop() > OnClientConnected error: " + e); }
                 }
 
                 List<TcpClient> disconnected = new List<TcpClient>();
@@ -99,37 +134,55 @@ public class UnityTcpServer : MonoBehaviour
                 {
                     foreach (var client in clients)
                     {
-                        if (!client.Connected)
+                        Socket socket = client.Client;
+                        if (socket.Poll(0, SelectMode.SelectRead) && socket.Available == 0)
                         {
                             disconnected.Add(client);
                             continue;
                         }
 
                         NetworkStream stream = client.GetStream();
-                        // Trata a mensagem recebida
                         if (stream.DataAvailable)
                         {
                             byte[] buffer = new byte[1024];
                             int bytesRead = stream.Read(buffer, 0, buffer.Length);
                             string msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                            Debug.Log("UnityTcpServer > Recebido do cliente: " + msg);
-                            //foreach (RobotController robot in robots)
-                            //{
-                            //    robot.EnqueueCommandFromNetwork(msg);
-                            //}
+
+                            // Evita log se o Unity já estiver fechando
+                            if (running)
+                            {
+                                Debug.Log("UnityTcpServer > ServerLoop() > Recebido do cliente: " + msg);
+                                try { OnMessageArrived?.Invoke(msg); }
+                                catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - UnityTcpServer > ServerLoop() > OnMessageArrived error: " + e); }
+                            }
                         }
                     }
+
                     foreach (var dc in disconnected)
+                    {
                         clients.Remove(dc);
+                        Debug.Log("UnityTcpServer > ServerLoop() > Cliente desconectado: " + dc.Client.RemoteEndPoint);
+                        dc.Close();
+                        try { OnClientDisconnected?.Invoke(dc.Client.RemoteEndPoint); }
+                        catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - UnityTcpServer > ServerLoop() > OnClientDisconnected error: " + e); }
+                    }
                 }
+
                 Thread.Sleep(10);
             }
         }
+        catch (SocketException se)
+        {
+            if (running) // ignora erros de parada normal
+                Debug.LogError("UnityTcpServer > Erro no socket: " + se.Message);
+        }
         catch (Exception e)
         {
-            Debug.LogError("UnityTcpServer > " + "Erro no servidor: " + e.Message);
+            if (running)
+                Debug.LogError("UnityTcpServer > Erro no servidor: " + e.Message);
         }
     }
+
 
     public void BroadcastPlayerStates()
     {
@@ -164,4 +217,10 @@ public class UnityTcpServer : MonoBehaviour
         //Vector3 pos = transform.position; // por exemplo, posição do GameObject
         //Broadcast($"STATE,{pos.x},{pos.y},{pos.z}");
     }
+
+    //void OnDisable()
+    //{
+    //    StopServer();
+    //}
+
 }
