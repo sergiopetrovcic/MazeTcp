@@ -17,7 +17,7 @@ public class GUIStats : MonoBehaviour
     private GUIStyle _styleWhiteCenter = new GUIStyle();
 
     // Stats window
-    private Rect _statsWindow = new Rect(20, 20, 300, 635);
+    private Rect _statsWindow = new Rect(20, 20, 300, 650);
 
     // Shortcuts window
     //private Rect _shortcutsWindow = new Rect(20, 20 + 165 + 20, 300, 165);
@@ -114,33 +114,17 @@ public class GUIStats : MonoBehaviour
         GUI.Label(new Rect(_hi, _vi + 18 * _vs, _width, _height), "- Timer: " + ((player.timer + player.timerCurrentEpoch) / 1000).ToString("0.0"), _styleWhite);//, "box");
         GUI.Label(new Rect(_hi, _vi + 19 * _vs, _width, _height), "- - - - - - - - - - - - - - - - - - - - - - - - - -", _styleWhite);//, "box");
         GUI.Label(new Rect(0, -18 + 20 * _vs, _width, _height), "Shortcuts", _styleWhiteCenter);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 21 * _vs, _width, _height), "[X] - Save config", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 22 * _vs, _width, _height), "[Z] - Open config", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 23 * _vs, _width, _height), "[S] - Start simulation", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 24 * _vs, _width, _height), "[A] - Pause simulation", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 25 * _vs, _width, _height), "[D] - Reset simulation", _styleWhite);//, "box");
-
-        /*// Draw any Controls inside the window here
-        GUI.Label(new Rect(_hi, _vi, 200, 100), "\"Current epoch: " + _totalBodies, _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 1 * _vs, 200, 100), "Current epoch: " + _redBodies, _styleRed);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 2 * _vs, 200, 100), "Left rotations: " + _blueBodies, _styleBlue);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 3 * _vs, 200, 100), "Right rotations: " + _starMass.ToString("0"), _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 4 * _vs, 200, 100), "Total rotations (left + right): " + _starSize.ToString("0.00"), _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 5 * _vs, 200, 100), "Steps: " + _timerDisplay, _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 6 * _vs, 200, 100), "Moves (rotations + steps): " + _timerDisplay, _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 7 * _vs, 200, 100), "- - - - - - - - - - - - - - - - - - - - - - - - - -", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 8 * _vs, 200, 100), "All epochs: " + _redBodies, _styleRed);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 9 * _vs, 200, 100), "Number of blue bodies: " + _blueBodies, _styleBlue);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 10 * _vs, 200, 100), "Star mass: " + _starMass.ToString("0"), _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 11 * _vs, 200, 100), "Star size: " + _starSize.ToString("0.00"), _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 12 * _vs, 200, 100), "Duration: " + _timerDisplay, _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 13 * _vs, 200, 100), "- - - - - - - - - - - - - - - - - - - - - - - - - -", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 14 * _vs, 200, 100), "Shortcuts", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 15 * _vs, 200, 100), "[X] - Save config", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 16 * _vs, 200, 100), "[Z] - Open config", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 17 * _vs, 200, 100), "[S] - Start simulation", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 18 * _vs, 200, 100), "[A] - Pause simulation", _styleWhite);//, "box");
-        GUI.Label(new Rect(_hi, _vi + 19 * _vs, 200, 100), "[D] - Reset simulation", _styleWhite);//, "box");
-        */
+        GUI.Label(new Rect(_hi, _vi + 21 * _vs, _width, _height), "- [W] Move forward", _styleWhite);//, "box");
+        GUI.Label(new Rect(_hi, _vi + 22 * _vs, _width, _height), "- [A] Rotate 90° left", _styleWhite);//, "box");
+        GUI.Label(new Rect(_hi, _vi + 23 * _vs, _width, _height), "- [D] Rotate 90° right", _styleWhite);//, "box");
+        GUI.Label(new Rect(_hi, _vi + 24 * _vs, _width, _height), "- [alt+F4] Exit", _styleWhite);//, "box");
+        GUI.Label(new Rect(_hi, _vi + 25 * _vs, _width, _height), "- - - - - - - - - - - - - - - - - - - - - - - - - -", _styleWhite);//, "box");
+        GUI.Label(new Rect(0, -18 + 26 * _vs, _width, _height), "Information", _styleWhiteCenter);//, "box");
+        GUI.Label(new Rect(_hi, _vi + 27 * _vs, _width, _height), "- Server port: 5005", _styleWhite);//, "box");
+        //GUI.Label(new Rect(_hi, _vi + 22 * _vs, _width, _height), "[X] - Save config", _styleWhite);//, "box");
+        //GUI.Label(new Rect(_hi, _vi + 23 * _vs, _width, _height), "[Z] - Open config", _styleWhite);//, "box");
+        //GUI.Label(new Rect(_hi, _vi + 24 * _vs, _width, _height), "[S] - Start simulation", _styleWhite);//, "box");
+        //GUI.Label(new Rect(_hi, _vi + 25 * _vs, _width, _height), "[A] - Pause simulation", _styleWhite);//, "box");
+        //GUI.Label(new Rect(_hi, _vi + 26 * _vs, _width, _height), "[D] - Reset simulation", _styleWhite);//, "box");
     }
 }

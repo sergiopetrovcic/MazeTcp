@@ -1,11 +1,13 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public string name = "player01";
+    public string playerName = "player01";
 
     public UnityTcpServer tcpServer;
 
@@ -54,6 +56,11 @@ public class Player : MonoBehaviour
     private bool isPlaying = false;
     private float startTimer;
 
+    private Dictionary<string, Action<string>> commandHandlers;
+
+    // thread-safe queue for main-thread actions (network threads can enqueue simple commands)
+    private ConcurrentQueue<Action> actionQueue = new ConcurrentQueue<Action>();
+
     // Eventos
     public delegate void PlayerEvent(params object[] args);
     public event PlayerEvent OnStep;
@@ -97,6 +104,13 @@ public class Player : MonoBehaviour
         //sensorOffsets[3] = new Vector3(0f, heightOffset, -forwardOffset);
         //sensorOffsets[4] = new Vector3(0f, heightOffset, -forwardOffset);
         //sensorOffsets[5] = new Vector3(0f, heightOffset, -forwardOffset);
+
+        commandHandlers = new Dictionary<string, Action<string>>
+        {
+            { PlayerCommand.W, value => MoveToNextCell() },
+            { PlayerCommand.A, value => RotateCCW() },
+            { PlayerCommand.D, value => RotateCW() }
+        };
     }
 
     private void Player_OnMove(params object[] args)
@@ -125,6 +139,26 @@ public class Player : MonoBehaviour
     private void tcpServer_OnMessageArrived(params object[] args)
     {
         Debug.Log("Player > tcpServer_OnMessageArrived: " + args[0]);
+
+        PlayerCommandStructure playerCommand = JsonUtility.FromJson<PlayerCommandStructure>((string)args[0]);
+
+        if (this.playerName != playerCommand.name)
+            return;
+
+        HandleCommand(playerCommand.command.ToUpperInvariant(), playerCommand.value);
+    }
+
+    void HandleCommand(string command, string value)
+    {
+        if (commandHandlers.TryGetValue(command, out var action))
+            EnqueueMainThreadAction(() => action(value));
+        else
+            Debug.LogWarning("Comando desconhecido: " + command);
+    }
+
+    public void EnqueueMainThreadAction(Action safeAction)
+    {
+        actionQueue.Enqueue(safeAction);
     }
 
     private void OnDestroy()
@@ -149,6 +183,13 @@ public class Player : MonoBehaviour
     {
         if (isPlaying)
             timerCurrentEpoch += Time.time - startTimer;
+
+        // FIRST: process queued actions that were enqueued from network threads
+        while (actionQueue.TryDequeue(out Action act))
+        {
+            try { act?.Invoke(); }
+            catch (Exception e) { Debug.LogError("ActionQueue error: " + e); }
+        }
 
         if (maze != null)
             maze.RevealFog(transform.position, visionRadius);
@@ -335,4 +376,25 @@ public class Player : MonoBehaviour
         //gpsErrorMeters = Mathf.Max(0f, gpsErrorMeters);
     }
 #endif
+}
+
+public static class PlayerCommand
+{
+    public static string W = "W";           // Ex: {"name":"player01","command":"W"}
+    public static string A = "A";           // Ex: {"name":"player01","command":"A"}
+    public static string D = "D";           // Ex: {"name":"player01","command":"D"}
+}
+
+[System.Serializable]
+public class PlayerCommandStructure
+{
+    public string name;
+    public string command;
+    public string value;
+}
+
+[System.Serializable]
+public class PlayerState
+{
+    public float[] sensors;
 }

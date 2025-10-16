@@ -636,8 +636,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bfb2c466f1d261458902ab966db578f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MazeGenerator
-  sizeX: 4
-  sizeZ: 4
+  sizeX: 12
+  sizeZ: 12
   wallHeight: 2
   seed: 0
   shuffling: 0.1
