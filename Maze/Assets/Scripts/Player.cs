@@ -12,6 +12,8 @@ public class Player : MonoBehaviour
 
     public MazeGenerator maze;
 
+    public PlayerState state = new PlayerState();
+
     public Cell cell;
     public float visionRadius = 10f;
     public Cell currentCell;
@@ -26,7 +28,6 @@ public class Player : MonoBehaviour
     //private Vector3[] backDirs;               // sensor directions precomputed
     private Vector3[] sensorOffsets;            // sensor origins (positions relative to robot)
     private bool pendingSensorRead = true;
-    private float[] sensorsStatus;              // last read sensor distances
 
     [Header("Debug/State")]
     public bool debugDrawRays = true;
@@ -195,17 +196,11 @@ public class Player : MonoBehaviour
 
         if (pendingSensorRead)
         {
-            ReadSensors();
-            PlayerState state = new PlayerState(sensorsStatus);
+            state.UpdateSensors(GetSensorDistances());
             Debug.Log("Player State: " + JsonUtility.ToJson(state));
             tcpServer.Broadcast(JsonUtility.ToJson(state));
             pendingSensorRead = false;
         }
-    }
-
-    private void ReadSensors()
-    { 
-        sensorsStatus = GetSensorDistances();
     }
 
     #region Inputs
@@ -273,10 +268,12 @@ public class Player : MonoBehaviour
         timerCurrentEpoch = 0;
         cellsDiscoveredCurrentEpoch = 0;
         cellsVisitedCurrentEpoch = 0;
+        state.AtGoal = false;
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
         currentCell = maze.GetCell(maze.playerStart);
         maze.NewEpoch();
+        pendingSensorRead = true;
     }
 
     public void MoveToNextCell()
@@ -292,6 +289,9 @@ public class Player : MonoBehaviour
             movesCurrentEpoch++;
             steps++;
             moves++;
+
+            if (next.Coordinates == maze.targetCell)
+                state.AtGoal = true;
 
             try { OnStep?.Invoke(); }
             catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > MoveToNextCell() > OnStep error: " + e); }
@@ -397,11 +397,12 @@ public class PlayerCommandStructure
 [System.Serializable]
 public class PlayerState
 {
-    public float SensorLeft;
-    public float SensorForward;
-    public float SensorRight;
+    public bool AtGoal = false;
+    public float SensorLeft = 0f;
+    public float SensorForward = 0f;
+    public float SensorRight = 0f;
 
-    public PlayerState(float[] sensors)
+    public void UpdateSensors(float[] sensors)
     {
         SensorLeft = sensors != null && sensors.Length > 2 ? MathF.Round(sensors[2], 2) : 0f;
         SensorForward = sensors != null && sensors.Length > 0 ? MathF.Round(sensors[0], 2) : 0f;
