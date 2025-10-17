@@ -24,7 +24,6 @@ public class GUIStats : MonoBehaviour
 
     // Statistics
     private MazeGenerator maze;
-    private float _timer = 0;
 
     private void Start()
     {
