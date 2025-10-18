@@ -6,10 +6,10 @@ public class Lidar : MonoBehaviour
 {
     [Header("Referências")]
     [Tooltip("Transform de onde o raio parte (a direção é o eixo Z).")]
-    public Transform emitter;
+    public Transform laserProjector;
 
     [Tooltip("Parte giratória do LiDAR (opcional, visual).")]
-    public Transform lidarTransform;
+    public Transform lidarCase;
 
     [Tooltip("Parte do motor (opcional, visual).")]
     public Transform lidarMotor;
@@ -38,7 +38,7 @@ public class Lidar : MonoBehaviour
 
     void Start()
     {
-        if (!emitter)
+        if (!laserProjector)
         {
             Debug.LogError("LIDAR: defina o 'emitter' no Inspector!");
             enabled = false;
@@ -64,8 +64,8 @@ public class Lidar : MonoBehaviour
 
         // Rotação visual (opcional)
         float degreesPerSecond = rotationSpeedRPS * 360f;
-        if (lidarTransform)
-            lidarTransform.Rotate(rotationAxis, degreesPerSecond * Time.deltaTime, Space.Self);
+        if (lidarCase)
+            lidarCase.Rotate(rotationAxis, degreesPerSecond * Time.deltaTime, Space.Self);
         if (lidarMotor)
             lidarMotor.Rotate(rotationAxis, degreesPerSecond * 5f * Time.deltaTime, Space.Self);
 
@@ -79,8 +79,8 @@ public class Lidar : MonoBehaviour
 
     private void FireRay()
     {
-        Vector3 origin = emitter.position;
-        Vector3 direction = emitter.forward;
+        Vector3 origin = laserProjector.position;
+        Vector3 direction = laserProjector.forward;
         Vector3 endPoint;
 
         if (Physics.Raycast(origin, direction, out RaycastHit hit, maxRange))

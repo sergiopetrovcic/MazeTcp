@@ -37,23 +37,36 @@ public class InputManager : MonoBehaviour
 
     private void HandleKeyboardInput()
     {
-        if (IsKeyDown_NumpadPlus()) cameraManager.Next();
-        if (IsKeyDown_NumpadMinus()) cameraManager.Previous();
-        if (IsKeyDown_NumpadPeriod()) cameraManager.ShowAll();
-        if (IsKeyDown_Ctrl_F()) mazeGenerator.ToggleFog();
-        if (IsKeyDown_Ctrl_R()) mazeGenerator.GenerateMaze(mazeGenerator.seed, mazeGenerator.shuffling);
-        if (IsKeyDown_W()) player.MoveToNextCell();
-        if (IsKeyDown_A()) player.RotateCCW();
-        if (IsKeyDown_D()) player.RotateCW();
-        if (IsKeyDown_R()) player.Restart();
+        if (cameraManager != null)
+        {
+            if (IsKeyDown_NumpadPlus()) cameraManager.Next();
+            if (IsKeyDown_NumpadMinus()) cameraManager.Previous();
+            if (IsKeyDown_NumpadPeriod()) cameraManager.ShowAll();
+        }
+
+        if (mazeGenerator != null)
+        {
+            if (IsKeyDown_Ctrl_F()) mazeGenerator.ToggleFog();
+            if (IsKeyDown_Ctrl_R()) mazeGenerator.GenerateMaze(mazeGenerator.seed, mazeGenerator.shuffling);
+        }
+
+        if (player != null)
+        {
+            if (IsKeyDown_W()) player.MoveToNextCell();
+            if (IsKeyDown_A()) player.RotateCCW();
+            if (IsKeyDown_D()) player.RotateCW();
+            if (IsKeyDown_R()) player.Restart();
+        }
     }
 
     private void Start()
     {
         if (player == null)
-            Debug.LogError("Player not initialized!");
+            Debug.LogWarning("Player not initialized!");
         if (cameraManager == null)
-            Debug.LogError("CameraManager not initialized!");
+            Debug.LogWarning("CameraManager not initialized!");
+        if (mazeGenerator == null)
+            Debug.LogWarning("MazeGenerator not initialized!");
     }
 
     void Update()

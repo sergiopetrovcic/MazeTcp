@@ -72,11 +72,20 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
-        maze.OnCellDiscovered += Maze_OnCellDiscovered;
-        maze.OnCellVisited += Maze_OnCellVisited;
-        maze.OnFinish += Maze_OnFinish;
+        if (maze != null)
+        {
+            maze = FindFirstObjectByType<MazeGenerator>();
+            maze.OnCellDiscovered += Maze_OnCellDiscovered;
+            maze.OnCellVisited += Maze_OnCellVisited;
+            maze.OnFinish += Maze_OnFinish;
+        }
+
+        if (tcpServer != null)
+        {
+            tcpServer.OnMessageArrived += tcpServer_OnMessageArrived;
+        }
+
         this.OnMove += Player_OnMove;
-        tcpServer.OnMessageArrived += tcpServer_OnMessageArrived;
 
         // default sensors root
         if (sensorsRoot == null) sensorsRoot = transform;
@@ -163,9 +172,19 @@ public class Player : MonoBehaviour
 
     private void OnDestroy()
     {
-        maze.OnFinish -= Maze_OnFinish;
-        maze.OnCellDiscovered -= Maze_OnCellDiscovered;
-        maze.OnCellVisited -= Maze_OnCellVisited;
+        if (maze != null)
+        {
+            maze.OnCellDiscovered -= Maze_OnCellDiscovered;
+            maze.OnCellVisited -= Maze_OnCellVisited;
+            maze.OnFinish -= Maze_OnFinish;
+        }
+
+        this.OnMove -= Player_OnMove;
+
+        if (tcpServer != null)
+        {
+            tcpServer.OnMessageArrived -= tcpServer_OnMessageArrived;
+        }
     }
 
     void Start()
@@ -174,15 +193,17 @@ public class Player : MonoBehaviour
             maze = FindFirstObjectByType<MazeGenerator>();
 
         // Define célula inicial
-        currentCell = maze.GetCell(maze.playerStart);
-        transform.position = currentCell.transform.position + Vector3.up * 1f; // acima do chão
-        targetPosition = transform.position;
+        if (maze != null)
+        {
+            currentCell = maze.GetCell(maze.playerStart);
+            transform.position = currentCell.transform.position + Vector3.up * 1f; // acima do chão
+            targetPosition = transform.position;
+        }
     }
 
     void Update()
     {
-        if (isPlaying)
-            timerCurrentEpoch += Time.time - startTimer;
+        if (isPlaying) timerCurrentEpoch += Time.time - startTimer;
 
         // FIRST: process queued actions that were enqueued from network threads
         while (actionQueue.TryDequeue(out Action act))
@@ -191,14 +212,13 @@ public class Player : MonoBehaviour
             catch (Exception e) { Debug.LogError("ActionQueue error: " + e); }
         }
 
-        if (maze != null)
-            maze.RevealFog(transform.position, visionRadius);
+        if (maze != null) maze.RevealFog(transform.position, visionRadius);
 
         if (pendingSensorRead)
         {
             state.UpdateSensors(GetSensorDistances());
             Debug.Log("Player State: " + JsonUtility.ToJson(state));
-            tcpServer.Broadcast(JsonUtility.ToJson(state));
+            if (tcpServer != null) tcpServer.Broadcast(JsonUtility.ToJson(state));
             pendingSensorRead = false;
         }
     }
@@ -271,37 +291,42 @@ public class Player : MonoBehaviour
         state.AtGoal = false;
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
-        currentCell = maze.GetCell(maze.playerStart);
-        maze.NewEpoch();
+        if (maze != null)
+        {
+            currentCell = maze.GetCell(maze.playerStart);
+            maze.NewEpoch();
+        }
         pendingSensorRead = true;
     }
 
     public void MoveToNextCell()
     {
-        if (!isPlaying)
-            StartTimer();
+        if (!isPlaying) StartTimer();
 
-        Cell next = maze.GetNeighbor(currentCell, transform.forward);
-        if (next != null)
+        if (maze != null)
         {
-            currentCell = next;
-            stepsCurrentEpoch++;
-            movesCurrentEpoch++;
-            steps++;
-            moves++;
+            Cell next = maze.GetNeighbor(currentCell, transform.forward);
+            if (next != null)
+            {
+                currentCell = next;
+                stepsCurrentEpoch++;
+                movesCurrentEpoch++;
+                steps++;
+                moves++;
 
-            if (next.Coordinates == maze.targetCell)
-                state.AtGoal = true;
+                if (next.Coordinates == maze.targetCell)
+                    state.AtGoal = true;
 
-            try { OnStep?.Invoke(); }
-            catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > MoveToNextCell() > OnStep error: " + e); }
-            try { OnMove?.Invoke(); }
-            catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > RotateCW() > OnMove error: " + e); }
-            // Manobra necessária para garantir a ordem dos eventos:
-            StartCoroutine(MoveAndTriggerSequence(next, new Vector3(next.transform.position.x, transform.position.y, next.transform.position.z)));
+                try { OnStep?.Invoke(); }
+                catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > MoveToNextCell() > OnStep error: " + e); }
+                try { OnMove?.Invoke(); }
+                catch (Exception e) { Debug.LogError(Time.time.ToString("F3") + " - Player > RotateCW() > OnMove error: " + e); }
+                // Manobra necessária para garantir a ordem dos eventos:
+                StartCoroutine(MoveAndTriggerSequence(next, new Vector3(next.transform.position.x, transform.position.y, next.transform.position.z)));
+            }
+            else
+                Debug.Log("Parede bloqueando o caminho ou fora dos limites.");
         }
-        else
-            Debug.Log("Parede bloqueando o caminho ou fora dos limites.");
     }
     #endregion
 
